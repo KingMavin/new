@@ -54,6 +54,17 @@ backdrops (gradient art per location) rather than animations.
 - Tournaments and wars use the same narrated encounter system with their own backdrops (tournament ring, war front) and opening choice moments
 - Tournament and war results are recorded in your records
 
+## Phase 8 — Paths, endings & the immortalized legend
+
+- Your name is asked at character creation — the name the world will remember
+- Story arcs: five choice-driven chapters per race (The Verdant Empire, The Old Blood, The Beast-Blooded), unlocked as you climb the realm ladder (chapters at realms 0, 1, 3, 5, 7)
+- Every story choice pushes you along one of three paths — Path of Heaven (+3% breakthrough), Path of Sovereignty (+5% attack), Path of the Wild (+5% spirit stones) — and the dominant path shapes how your tale ends
+- Six endings, evaluated when you survive the final tribulation at the ascension gate: three main endings (The Gate of Heaven, The Ash Throne, The Verdant Return) decided by your dominant path, and three hidden endings earned by condition — The Ninth Lightning (survive after failing three tribulations), The Nameless Grave (give everything to the beggar at the shrine), The Wheel Unbound (reach ascension after three rebirths without losing a battle)
+- Endings are epilogue milestones, not game-overs: they are recorded in your legend, the game continues, and reincarnation starts a New Game+ with a fresh story arc
+- Immortalization: reach the highest reputation tier or achieve any ending and the world remembers you — statues, heralds crying your name at tournaments, enemy soldiers whispering it on war fronts; your name survives every reincarnation
+- Race-gated combat moments: demons get Bloodline Frenzy, demi-humans get Beast Senses, humans get Formation Tactics as mid-fight choices
+- A new random event (The Beggar at the Shrine) feeds the hidden endings; some story choices leave permanent flags
+
 ## Phase 7 — Faction reputation & race halls
 
 - Faction reputation: every hunt, tournament, and war earns reputation with your people’s faction (Verdant Empire, Ash Wastes Clans, or Border Forest Tribes); wars and tournaments earn far more than hunts
@@ -108,6 +119,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Faction plotline: race-specific story arcs, rival faction clashes, reputation unlocks beyond the halls
-2. More choice moments per event type, larger war campaigns, and tournament seasons
-3. Audio, local notifications, balance pass, optional background art packs
+1. Rival faction clashes and reputation unlocks beyond the halls; more chapters per arc
+2. Market/shop and spirit herb garden; settings with save export/import
+3. Local notifications, audio, balance pass, optional background art packs

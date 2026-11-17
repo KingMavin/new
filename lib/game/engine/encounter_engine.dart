@@ -247,9 +247,122 @@ class EncounterEngine {
       );
     }
     if (encounter.round >= 2 && random.nextDouble() < momentChance) {
-      return _techniqueMoment(state, encounter.beast);
+      return _techniqueMoment(state, encounter.beast) ??
+          _raceMoment(state, encounter.beast);
+    }
+    if (encounter.round >= 3 && random.nextDouble() < momentChance) {
+      return _raceMoment(state, encounter.beast);
     }
     return null;
+  }
+
+  static EncounterMoment? _raceMoment(GameState state, Beast beast) {
+    switch (state.raceId) {
+      case 'demon':
+        return EncounterMoment(
+          title: 'Bloodline Frenzy',
+          text:
+              'The old blood in your veins wakes and roars for the fight. '
+              'Your vision runs red at the edges \u2014 you can ride the '
+              'frenzy or master it.',
+          choices: [
+            EncounterChoice(
+              label: 'Surrender to the frenzy',
+              successText:
+                  'You let the old blood drive and your claws find gaps '
+                  'no technique could.',
+              failText:
+                  'The frenzy takes your balance with it \u2014 you take '
+                  'a wound reaching for too much.',
+              damageMultiplier: 2.0,
+              selfDamageFraction: 0.14,
+              baseChance: 0.55,
+            ),
+            EncounterChoice(
+              label: 'Master the blood with discipline',
+              successText:
+                  'You leash the frenzy into cold, precise violence.',
+              failText:
+                  'The blood fights your leash and your strike lands '
+                  'shallow.',
+              damageMultiplier: 1.2,
+              selfDamageFraction: 0.05,
+              baseChance: 0.8,
+            ),
+          ],
+        );
+      case 'demi_human':
+        return EncounterMoment(
+          title: 'Beast Senses',
+          text:
+              'Your beast blood reads the air: muscle-tension, wind, the '
+              'tells of what comes next. The forest instinct offers its '
+              'counsel.',
+          choices: [
+            EncounterChoice(
+              label: 'Read the foe and strike the told weakness',
+              successText:
+                  'The senses do not lie \u2014 your strike lands exactly '
+                  'where the body was already failing.',
+              failText:
+                  'The beast feints past its own tells and catches you '
+                  'reading the wrong limb.',
+              damageMultiplier: 1.3,
+              selfDamageFraction: 0.06,
+              baseChance: 0.8,
+            ),
+            EncounterChoice(
+              label: 'Trust instinct and bare your fangs back',
+              successText:
+                  'You answer its killing intent with older killing '
+                  'intent \u2014 the beast blinks first and you press '
+                  'hard.',
+              failText:
+                  'Its killing intent is older than yours \u2014 the '
+                  'stare-down costs you an opening.',
+              damageMultiplier: 1.7,
+              selfDamageFraction: 0.1,
+              baseChance: 0.6,
+            ),
+          ],
+        );
+      case 'human':
+        return EncounterMoment(
+          title: 'Formation Tactics',
+          text:
+              'What humans lack in blood they make up in doctrine. The '
+              'terrain around you suggests formations \u2014 if you are '
+              'willing to trade time for position.',
+          choices: [
+            EncounterChoice(
+              label: 'Draw it into your trap formation',
+              successText:
+                  'The beast steps exactly where the formation wanted it, '
+                  'and the world punishes it for you.',
+              failText:
+              'It refuses the bait and punishes your stillness \u2014 '
+                  'you eat a charge setting the trap.',
+              damageMultiplier: 1.6,
+              selfDamageFraction: 0.09,
+              baseChance: 0.7,
+            ),
+            EncounterChoice(
+              label: 'Abandon cunning for a straight exchange',
+              successText:
+                  'Sometimes doctrine is simple: hit first, hit last. '
+                  'You do both.',
+              failText:
+                  'A straight exchange against a beast is a coin toss, '
+                  'and this time it lands badly.',
+              damageMultiplier: 1.0,
+              selfDamageFraction: 0.12,
+              baseChance: 0.75,
+            ),
+          ],
+        );
+      default:
+        return null;
+    }
   }
 
   static EncounterMoment? _techniqueMoment(GameState state, Beast beast) {

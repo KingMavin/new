@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:immortal_path/game/engine/race_engine.dart';
+import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
@@ -78,7 +79,8 @@ class CultivationEngine {
         state.breakthroughBonus +
         technique.breakthroughBonus +
         SoulEngine.breakthroughBonus(state) +
-        SectEngine.breakthroughBonus(state);
+        SectEngine.breakthroughBonus(state) +
+        StoryEngine.breakthroughBonus(state);
     return chance.clamp(0.05, 0.95).toDouble();
   }
 

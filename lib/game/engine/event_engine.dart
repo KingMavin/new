@@ -17,6 +17,7 @@ class EventChoice {
   final int lifespanYears;
   final int qiPills;
   final bool gamble;
+  final String? flag;
 
   const EventChoice({
     required this.label,
@@ -30,6 +31,7 @@ class EventChoice {
     this.lifespanYears = 0,
     this.qiPills = 0,
     this.gamble = false,
+    this.flag,
   });
 }
 
@@ -234,7 +236,28 @@ class EventEngine {
         EventChoice(label: 'Share your provisions', herbCost: 1, qiMinutes: 30),
       ],
     ),
+    GameEvent(
+      id: 'the_beggar',
+      title: 'The Beggar at the Shrine',
+      description:
+          'At a crumbling roadside shrine you find a beggar with eyes '
+          'like old coins. He asks not for charity but for everything: '
+          '\u201cEmpty your purse into my bowl, cultivator, and heaven '
+          'will owe you a kindness. Keep your stones, and we speak of '
+          'this never.\u201d',
+      choices: [
+        EventChoice(
+          label: 'Empty your purse into his bowl',
+          stonesCostFactor: 1.0,
+          flag: 'gave_everything',
+        ),
   ];
+
+        EventChoice(
+          label: 'Turn away and keep walking',
+        ),
+      ],
+    ),
 
   static GameEvent? byId(String id) {
     for (final event in catalog) {
@@ -329,7 +352,7 @@ class EventEngine {
       parts.add('Fortune abandoned you this time');
     }
 
-    final updated = state.copyWith(
+    var updated = state.copyWith(
       spiritStones: stones,
       spiritHerbs: herbs,
       beastCores: cores,
@@ -339,6 +362,13 @@ class EventEngine {
       lifespanBonusYears: lifespan,
       lastSaved: DateTime.now(),
     );
+    if (success &&
+        choice.flag != null &&
+        !updated.storyFlags.contains(choice.flag)) {
+      updated = updated.copyWith(
+        storyFlags: [...updated.storyFlags, choice.flag!],
+      );
+    }
 
     final prefix = success
         ? (choice.gamble ? 'Fortune smiled on you! ' : '')

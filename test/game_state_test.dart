@@ -271,6 +271,50 @@ void main() {
       expect(parsed.reputation['human'], 5);
     });
 
+    test('version 7 saves load with phase 8 defaults', () {
+      final v7 = GameState.initial().toJson()
+        ..['version'] = 7
+        ..remove('legacyName')
+        ..remove('pathPoints')
+        ..remove('storyChapter')
+        ..remove('storyFlags')
+        ..remove('immortalized')
+        ..remove('legendSeen')
+        ..remove('achievedEndings')
+        ..remove('pendingEndingId');
+      final parsed = GameState.fromJson(v7);
+      expect(parsed.legacyName, isNull);
+      expect(parsed.pathPoints, isEmpty);
+      expect(parsed.storyChapter, 0);
+      expect(parsed.storyFlags, isEmpty);
+      expect(parsed.immortalized, isFalse);
+      expect(parsed.legendSeen, isFalse);
+      expect(parsed.achievedEndings, isEmpty);
+      expect(parsed.pendingEndingId, isNull);
+    });
+
+    test('json roundtrip preserves story and legacy', () {
+      final state = GameState.initial().copyWith(
+        legacyName: 'Li Wuxin',
+        pathPoints: const {'heaven': 6, 'wild': 2},
+        storyChapter: 3,
+        storyFlags: const ['served_in_war'],
+        immortalized: true,
+        legendSeen: true,
+        achievedEndings: const ['main_heaven'],
+        pendingEndingId: 'hidden_wheel',
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.legacyName, 'Li Wuxin');
+      expect(parsed.pathPoints, {'heaven': 6, 'wild': 2});
+      expect(parsed.storyChapter, 3);
+      expect(parsed.storyFlags, ['served_in_war']);
+      expect(parsed.immortalized, isTrue);
+      expect(parsed.legendSeen, isTrue);
+      expect(parsed.achievedEndings, ['main_heaven']);
+      expect(parsed.pendingEndingId, 'hidden_wheel');
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

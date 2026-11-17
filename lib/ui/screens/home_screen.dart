@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
+import 'package:immortal_path/game/engine/ending_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
+import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
+import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
@@ -43,9 +46,96 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showEndingIfNeeded() {
+    final endingId = widget.controller.state.pendingEndingId;
+    if (!mounted || endingId == null) {
+      _showLegendIfNeeded();
+      return;
+    }
+    final ending = EndingEngine.byId(endingId);
+    if (ending == null) {
+      _showLegendIfNeeded();
+      return;
+    }
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(ending.title),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (ending.hidden)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Chip(
+                    avatar: const Icon(Icons.star, size: 18),
+                    label: const Text('Hidden ending discovered'),
+                  ),
+                ),
+              Text(ending.epilogue),
+              const SizedBox(height: 8),
+              Text(
+                'This ending is recorded in your legend and will persist '
+                'through every reincarnation.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              widget.controller.acknowledgeEnding();
+              _showLegendIfNeeded();
+            },
+            child: const Text('Continue the legend'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLegendIfNeeded() {
+    final state = widget.controller.state;
+    if (!mounted || !state.immortalized || state.legendSeen) return;
+    final name = state.legacyName ?? 'The Nameless One';
+    final raceName =
+        state.raceId == null ? '' : Race.byId(state.raceId!).name;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('The World Remembers'),
+        content: Text(
+          'Statues rise in three kingdoms. Sect registries and demon clan '
+          'fires alike speak of $name, the immortalized of the $raceName '
+          'people.\n\n'
+          'From now on, your name echoes through tournaments and wars '
+          '\u2014 and it will survive every reincarnation.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              widget.controller.acknowledgeLegend();
+            },
+            child: const Text('Carry it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showOfflineReportIfNeeded() {
     final report = widget.controller.consumePendingOfflineReport();
-    if (!mounted || report == null) return;
+    if (!mounted || report == null) {
+      _showEndingIfNeeded();
+      return;
+    }
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -56,7 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showEndingIfNeeded();
+            },
             child: const Text('Continue cultivating'),
           ),
         ],
@@ -111,6 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   requirement: requirement,
                   progress: progress,
                 ),
+                const SizedBox(height: 16),
+                _StoryCard(controller: widget.controller, state: state),
                 const SizedBox(height: 16),
                 if (!state.ascended && state.tribulationActive)
                   Card(
@@ -184,14 +279,193 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _RaceSelectionDialog extends StatelessWidget {
+class _StoryCard extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+
+  const _StoryCard({required this.controller, required this.state});
+
+  void _openStoryDialog(BuildContext context, StoryChapter chapter) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _StoryDialog(controller: controller, chapter: chapter),
+    );
+  }
+
+  String _nextGateLabel() {
+    if (state.raceId == null) return 'Choose your origin to begin your legend.';
+    if (state.storyChapter >= StoryEngine.realmGates.length) {
+      return 'Your tale for this life is fully told.';
+    }
+    final gate = StoryEngine.realmGates[state.storyChapter];
+    return 'The next chapter awaits at '
+        '${RealmLadder.realmName(gate)} realm.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final chapter = controller.currentStoryChapter();
+    final hasPoints = state.pathPoints.values.any((value) => value > 0);
+    final dominant = StoryEngine.dominantPath(state);
+    final pathInfo = StoryPathInfo.byId(dominant);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Your Path',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                if (state.immortalized)
+                  Chip(
+                    avatar: const Icon(Icons.star, size: 18),
+                    label: Text(
+                      state.legacyName ?? 'Immortalized',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (hasPoints)
+              Text(
+                '${pathInfo.name} \u00b7 ${pathInfo.bonusLabel}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+            if (chapter != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Chapter ${state.storyChapter + 1}: ${chapter.title}',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                chapter.narration,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: () => _openStoryDialog(context, chapter),
+                icon: const Icon(Icons.auto_stories),
+                label: const Text('Continue the story'),
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(
+                _nextGateLabel(),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+            if (state.achievedEndings.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                children: [
+                  for (final id in state.achievedEndings)
+                    Chip(
+                      avatar: const Icon(Icons.military_tech, size: 18),
+                      label: Text(
+                        EndingEngine.byId(id)?.title ?? id,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoryDialog extends StatefulWidget {
+  final GameController controller;
+  final StoryChapter chapter;
+
+  const _StoryDialog({required this.controller, required this.chapter});
+
+  @override
+  State<_StoryDialog> createState() => _StoryDialogState();
+}
+
+class _StoryDialogState extends State<_StoryDialog> {
+  String? _outcome;
+
+  @override
+  Widget build(BuildContext context) {
+    final chapter = widget.chapter;
+    return AlertDialog(
+      title: Text(chapter.title),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(chapter.narration),
+            const SizedBox(height: 12),
+            if (_outcome == null)
+              for (var i = 0; i < chapter.choices.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: OutlinedButton(
+                    onPressed: () {
+                      final outcome = widget.controller.advanceStory(i);
+                      if (!mounted) return;
+                      setState(() {
+                        _outcome = outcome?.choice.narration ??
+                            'The moment passes without consequence.';
+                      });
+                    },
+                    child: Text(chapter.choices[i].label),
+                  ),
+                )
+            else ...[
+              Text(_outcome!),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('The path continues'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+class _RaceSelectionDialog extends StatefulWidget {
   final GameController controller;
   final VoidCallback onDone;
 
   const _RaceSelectionDialog({required this.controller, required this.onDone});
 
+  @override
+  State<_RaceSelectionDialog> createState() => _RaceSelectionDialogState();
+}
+
+class _RaceSelectionDialogState extends State<_RaceSelectionDialog> {
+  final _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
   void _choose(BuildContext context, Race race) {
-    controller.chooseRace(race.id);
+    widget.controller.chooseRace(race.id, name: _nameController.text);
     Navigator.of(context).pop();
     showDialog<void>(
       context: context,
@@ -202,7 +476,7 @@ class _RaceSelectionDialog extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              onDone();
+              widget.onDone();
             },
             child: const Text('Begin the path'),
           ),
@@ -220,6 +494,19 @@ class _RaceSelectionDialog extends StatelessWidget {
         child: ListView(
           shrinkWrap: true,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TextField(
+                controller: _nameController,
+                maxLength: 20,
+                decoration: const InputDecoration(
+                  labelText: 'Your name',
+                  hintText: 'The name the world will remember',
+                  border: OutlineInputBorder(),
+                  counterText: '',
+                ),
+              ),
+            ),
             for (final race in Race.catalog)
               Card(
                 child: Padding(

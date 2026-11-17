@@ -59,6 +59,14 @@ class GameState {
   final DateTime? lastTournamentAt;
   final DateTime? lastWarAt;
   final Map<String, int> reputation;
+  final String? legacyName;
+  final Map<String, int> pathPoints;
+  final int storyChapter;
+  final List<String> storyFlags;
+  final bool immortalized;
+  final bool legendSeen;
+  final List<String> achievedEndings;
+  final String? pendingEndingId;
 
   const GameState({
     required this.realmIndex,
@@ -114,6 +122,14 @@ class GameState {
     this.lastTournamentAt,
     this.lastWarAt,
     this.reputation = const {},
+    this.legacyName,
+    this.pathPoints = const {},
+    this.storyChapter = 0,
+    this.storyFlags = const [],
+    this.immortalized = false,
+    this.legendSeen = false,
+    this.achievedEndings = const [],
+    this.pendingEndingId,
   });
 
   factory GameState.initial() => GameState(
@@ -219,6 +235,14 @@ class GameState {
     DateTime? lastTournamentAt,
     DateTime? lastWarAt,
     Map<String, int>? reputation,
+    Object? legacyName = _unset,
+    Map<String, int>? pathPoints,
+    int? storyChapter,
+    List<String>? storyFlags,
+    bool? immortalized,
+    bool? legendSeen,
+    List<String>? achievedEndings,
+    Object? pendingEndingId = _unset,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -285,11 +309,22 @@ class GameState {
       lastTournamentAt: lastTournamentAt ?? this.lastTournamentAt,
       lastWarAt: lastWarAt ?? this.lastWarAt,
       reputation: reputation ?? this.reputation,
+      legacyName:
+          legacyName == _unset ? this.legacyName : legacyName as String?,
+      pathPoints: pathPoints ?? this.pathPoints,
+      storyChapter: storyChapter ?? this.storyChapter,
+      storyFlags: storyFlags ?? this.storyFlags,
+      immortalized: immortalized ?? this.immortalized,
+      legendSeen: legendSeen ?? this.legendSeen,
+      achievedEndings: achievedEndings ?? this.achievedEndings,
+      pendingEndingId: pendingEndingId == _unset
+          ? this.pendingEndingId
+          : pendingEndingId as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 7,
+        'version': 8,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -343,6 +378,14 @@ class GameState {
         'lastTournamentAt': lastTournamentAt?.toIso8601String(),
         'lastWarAt': lastWarAt?.toIso8601String(),
         'reputation': reputation,
+        'legacyName': legacyName,
+        'pathPoints': pathPoints,
+        'storyChapter': storyChapter,
+        'storyFlags': storyFlags,
+        'immortalized': immortalized,
+        'legendSeen': legendSeen,
+        'achievedEndings': achievedEndings,
+        'pendingEndingId': pendingEndingId,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -437,5 +480,20 @@ class GameState {
               (key, value) => MapEntry(key, (value as num).toInt()),
             ) ??
             const {},
+        legacyName: json['legacyName'] as String?,
+        pathPoints: (json['pathPoints'] as Map<String, dynamic>?)?.map(
+              (key, value) => MapEntry(key, (value as num).toInt()),
+            ) ??
+            const {},
+        storyChapter: json['storyChapter'] as int? ?? 0,
+        storyFlags:
+            (json['storyFlags'] as List<dynamic>? ?? const [])
+                .cast<String>(),
+        immortalized: json['immortalized'] as bool? ?? false,
+        legendSeen: json['legendSeen'] as bool? ?? false,
+        achievedEndings:
+            (json['achievedEndings'] as List<dynamic>? ?? const [])
+                .cast<String>(),
+        pendingEndingId: json['pendingEndingId'] as String?,
       );
 }

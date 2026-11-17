@@ -9,6 +9,7 @@ import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
 import 'package:immortal_path/game/engine/encounter_engine.dart';
+import 'package:immortal_path/game/engine/ending_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/tournament_engine.dart';
@@ -16,10 +17,12 @@ import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
+import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/race.dart';
+import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
@@ -154,8 +157,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
 
   TribulationOutcome? faceTribulation(TribulationAction action) {
     if (!_state.tribulationActive) return null;
+    final wasAscended = _state.ascended;
     final outcome = TribulationEngine.faceWave(_state, action, rng: _rng);
     _state = outcome.state;
+    if (!wasAscended && _state.ascended) {
+      _evaluateEnding();
+    }
     notifyListeners();
     save();
     return outcome;
@@ -266,6 +273,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       _state,
       beast,
       introLines: [
+        if (_state.immortalized && _state.legacyName != null)
+          'The heralds cry your name across the sands \u2014 '
+              '${_state.legacyName}, whose statues stand in three '
+              'kingdoms. The crowd roars before a single blow is struck.',
         'The tournament platform smells of sand and incense. Across the '
             'ring, ${beast.name} bows with a blade salute.',
         'The gong sounds — the bout begins!',
@@ -331,6 +342,9 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       beast,
       introLines: [
         WarEngine.frontDescription(_state),
+        if (_state.immortalized && _state.legacyName != null)
+          'Enemy soldiers whisper your name \u2014 ${_state.legacyName} '
+              'walks the field. More than one shield arm drops.',
         'Their champion, ${beast.name}, strides from the enemy lines. '
             'Both armies fall silent.',
       ],
@@ -437,6 +451,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
       lastTournamentAt: DateTime.now(),
     );
+    _checkImmortalization();
     _lastEncounterSummary = won
         ? '${TournamentEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -463,6 +478,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       warsWon: _state.warsWon + (won ? 1 : 0),
       lastWarAt: DateTime.now(),
     );
+    _checkImmortalization();
     _lastEncounterSummary = won
         ? '${WarEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -538,6 +554,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       );
     }
 
+    _checkImmortalization();
     _state = updated;
     _encounter = finished;
     notifyListeners();
@@ -616,13 +633,67 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     return true;
   }
 
-  bool chooseRace(String raceId) {
+  bool chooseRace(String raceId, {String? name}) {
     if (_state.raceId != null) return false;
     if (Race.catalog.every((race) => race.id != raceId)) return false;
-    _state = _state.copyWith(raceId: raceId);
+    final trimmed = name?.trim() ?? '';
+    _state = _state.copyWith(
+      raceId: raceId,
+      legacyName: trimmed.isEmpty || trimmed.length > 20
+          ? null
+          : trimmed,
+    );
     notifyListeners();
     save();
     return true;
+  }
+
+  StoryChapter? currentStoryChapter() => StoryEngine.currentChapter(_state);
+
+  StoryOutcome? advanceStory(int choiceIndex) {
+    final outcome = StoryEngine.advance(_state, choiceIndex);
+    if (outcome == null) return null;
+    _state = outcome.state;
+    notifyListeners();
+    save();
+    return outcome;
+  }
+
+  void acknowledgeEnding() {
+    if (_state.pendingEndingId == null) return;
+    _state = _state.copyWith(
+      pendingEndingId: null,
+      immortalized: true,
+    );
+    notifyListeners();
+    save();
+  }
+
+  void acknowledgeLegend() {
+    if (!_state.immortalized || _state.legendSeen) return;
+    _state = _state.copyWith(legendSeen: true);
+    notifyListeners();
+    save();
+  }
+
+  void _evaluateEnding() {
+    final id = EndingEngine.evaluateState(_state);
+    if (id == null || _state.achievedEndings.contains(id)) return;
+    _state = _state.copyWith(
+      pendingEndingId: id,
+      achievedEndings: [..._state.achievedEndings, id],
+      immortalized: true,
+    );
+  }
+
+  void _checkImmortalization() {
+    if (_state.immortalized || _state.raceId == null) return;
+    if (ReputationEngine.tierOf(
+          ReputationEngine.ownReputation(_state),
+        ) >=
+        ReputationEngine.tierThresholds.length - 1) {
+      _state = _state.copyWith(immortalized: true);
+    }
   }
 
   void reincarnate() {

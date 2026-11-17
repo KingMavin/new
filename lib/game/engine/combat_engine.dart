@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
+import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
@@ -70,7 +71,8 @@ class CombatEngine {
             companionMultiplier *
             (1.0 + SoulEngine.attackBonus(state)) *
             SectEngine.attackMultiplier(state) *
-            RaceEngine.attackMultiplier(state) +
+            RaceEngine.attackMultiplier(state) *
+            (1.0 + StoryEngine.attackBonus(state)) +
         (state.weapon?.power ?? 0);
   }
 
@@ -116,7 +118,8 @@ class CombatEngine {
         (0.8 + random.nextDouble() * 0.4) *
         (1.0 + SoulEngine.stoneBonus(state)) *
         RaceEngine.stoneMultiplier(state) *
-        (1.0 + ReputationEngine.standingBonus(state));
+        (1.0 + ReputationEngine.standingBonus(state)) *
+        (1.0 + StoryEngine.stoneBonus(state));
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;

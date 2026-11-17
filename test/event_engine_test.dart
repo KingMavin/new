@@ -33,6 +33,27 @@ void main() {
     expect(EventEngine.byId('missing'), isNull);
   });
 
+  test('the beggar event grants the gave_everything flag', () {
+    final state = stateAt(spiritStones: 500).copyWith(raceId: 'human');
+    final outcome = EventEngine.resolve(
+      state,
+      'the_beggar',
+      0,
+      location,
+    )!;
+    expect(outcome.state.storyFlags, contains('gave_everything'));
+    expect(outcome.state.spiritStones, 0);
+
+    final kept = EventEngine.resolve(
+      state,
+      'the_beggar',
+      1,
+      location,
+    )!;
+    expect(kept.state.storyFlags, isNot(contains('gave_everything')));
+    expect(kept.state.spiritStones, 500);
+  });
+
   group('maybeTrigger', () {
     test('never triggers while another event is pending', () {
       final state = stateAt(pendingEventId: 'ancient_tomb');

@@ -105,6 +105,14 @@ class SoulEngine {
       missionLog: const [],
       bestiary: state.bestiary,
       pendingEventId: null,
+      reputation: state.reputation,
+      legacyName: state.legacyName,
+      pathPoints: const {},
+      storyChapter: 0,
+      storyFlags: const [],
+      immortalized: state.immortalized,
+      legendSeen: state.legendSeen,
+      achievedEndings: state.achievedEndings,
     );
   }
 }
