@@ -9,12 +9,16 @@ import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
 import 'package:immortal_path/game/engine/encounter_engine.dart';
+import 'package:immortal_path/game/engine/race_engine.dart';
+import 'package:immortal_path/game/engine/tournament_engine.dart';
+import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
@@ -40,10 +44,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   GameState _state = GameState.initial();
   OfflineReport? _pendingOfflineReport;
   EncounterState? _encounter;
+  EncounterKind _encounterKind = EncounterKind.hunt;
   String? _lastEncounterSummary;
 
   GameState get state => _state;
   EncounterState? get encounter => _encounter;
+  EncounterKind get encounterKind => _encounterKind;
   String? get lastEncounterSummary => _lastEncounterSummary;
 
   @override
@@ -225,10 +231,141 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     return zones[index];
   }
 
-  void startEncounter() {
+  void startEncounter() => _startHunt();
+
+  void _startHunt() {
     final location = effectiveLocation();
     final beast = location.beasts[_rng.nextInt(location.beasts.length)];
+    _encounterKind = EncounterKind.hunt;
     _encounter = EncounterEngine.begin(_state, beast);
+    _lastEncounterSummary = null;
+    notifyListeners();
+  }
+
+  bool canStartTournament() {
+    if (_state.raceId == null || _state.sectId == null) return false;
+    final last = _state.lastTournamentAt;
+    return last == null ||
+        DateTime.now().difference(last) >= TournamentEngine.cooldown;
+  }
+
+  Duration tournamentCooldownRemaining() {
+    final last = _state.lastTournamentAt;
+    if (last == null) return Duration.zero;
+    final remaining =
+        TournamentEngine.cooldown - DateTime.now().difference(last);
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
+
+  void startTournament() {
+    if (!canStartTournament()) return;
+    final beast = TournamentEngine.opponent(_state, rng: _rng);
+    _encounterKind = EncounterKind.tournament;
+    _encounter = EncounterEngine.begin(
+      _state,
+      beast,
+      introLines: [
+        'The tournament platform smells of sand and incense. Across the '
+            'ring, ${beast.name} bows with a blade salute.',
+        'The gong sounds — the bout begins!',
+      ],
+      opening: const EncounterMoment(
+        title: 'Opening Salute',
+        text:
+            'Your opponent settles into stance. Tournament rules forbid '
+            'killing blows, but bones still break all the same.',
+        choices: [
+          EncounterChoice(
+            label: 'Open with a probing exchange',
+            successText:
+                'You trade a flurry of measured strikes and come out '
+                'ahead, reading their rhythm.',
+            failText:
+                'Their flurry is faster — a palm catches your '
+                'shoulder and spins you half around.',
+            damageMultiplier: 1.0,
+            selfDamageFraction: 0.08,
+            baseChance: 0.75,
+          ),
+          EncounterChoice(
+            label: 'Blitz from the gong',
+            successText:
+                'You move before the echo dies, landing a stunning blow '
+                'to open the bout.',
+            failText:
+                'They were ready for the rush — a counter throw '
+                'slams you into the platform.',
+            damageMultiplier: 1.7,
+            selfDamageFraction: 0.18,
+            baseChance: 0.5,
+          ),
+        ],
+      ),
+    );
+    _lastEncounterSummary = null;
+    notifyListeners();
+  }
+
+  bool canStartWar() {
+    if (_state.raceId == null || _state.sectId == null) return false;
+    if (_state.realmIndex < WarEngine.requiredRealm) return false;
+    final last = _state.lastWarAt;
+    return last == null ||
+        DateTime.now().difference(last) >= WarEngine.cooldown;
+  }
+
+  Duration warCooldownRemaining() {
+    final last = _state.lastWarAt;
+    if (last == null) return Duration.zero;
+    final remaining = WarEngine.cooldown - DateTime.now().difference(last);
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
+
+  void startWar() {
+    if (!canStartWar()) return;
+    final beast = WarEngine.champion(_state, rng: _rng);
+    _encounterKind = EncounterKind.war;
+    _encounter = EncounterEngine.begin(
+      _state,
+      beast,
+      introLines: [
+        WarEngine.frontDescription(_state),
+        'Their champion, ${beast.name}, strides from the enemy lines. '
+            'Both armies fall silent.',
+      ],
+      opening: const EncounterMoment(
+        title: 'The Lines Meet',
+        text:
+            'The war horns sound. Around you, thousands collide — '
+            'but all of it hinges on the duel at the center.',
+        choices: [
+          EncounterChoice(
+            label: 'Hold the center with your ranks',
+            successText:
+                'Your formation absorbs their charge and your counterpush '
+                'buys the line time.',
+            failText:
+                'Their vanguard punches through — you take a spear '
+                'graze holding the gap.',
+            damageMultiplier: 1.0,
+            selfDamageFraction: 0.08,
+            baseChance: 0.75,
+          ),
+          EncounterChoice(
+            label: 'Charge their champion directly',
+            successText:
+                'You smash through the bodyguard ring and your opening '
+                'strike staggers their champion.',
+            failText:
+                'The guard ring closes — blades find you before you '
+                'reach him.',
+            damageMultiplier: 1.8,
+            selfDamageFraction: 0.2,
+            baseChance: 0.45,
+          ),
+        ],
+      ),
+    );
     _lastEncounterSummary = null;
     notifyListeners();
   }
@@ -272,6 +409,60 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _completeVictory(EncounterState finished, int rounds) {
+    if (_encounterKind == EncounterKind.tournament) {
+      _completeTournament(finished);
+      return;
+    }
+    if (_encounterKind == EncounterKind.war) {
+      _completeWar(finished);
+      return;
+    }
+    _completeHunt(finished, rounds);
+  }
+
+  void _completeTournament(EncounterState finished) {
+    final won = finished.victory;
+    final stones = won
+        ? TournamentEngine.prizeStones(_state)
+        : TournamentEngine.prizeStones(_state) * 0.1;
+    final contribution = won ? TournamentEngine.prizeContribution(_state) : 5;
+    _state = _state.copyWith(
+      spiritStones: _state.spiritStones + stones,
+      contribution: _state.contribution + contribution,
+      tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
+      lastTournamentAt: DateTime.now(),
+    );
+    _lastEncounterSummary = won
+        ? '${TournamentEngine.victoryText(_state)}\n\n'
+            '+${formatNumber(stones)} spirit stones, +$contribution contribution'
+        : '${TournamentEngine.defeatText}\n\n'
+            '+${formatNumber(stones)} spirit stones, +$contribution contribution';
+    _encounter = finished;
+    notifyListeners();
+    save();
+  }
+
+  void _completeWar(EncounterState finished) {
+    final won = finished.victory;
+    final stones = won ? WarEngine.prizeStones(_state) : 0.0;
+    final contribution = won ? WarEngine.prizeContribution(_state) : 10;
+    _state = _state.copyWith(
+      spiritStones: _state.spiritStones + stones,
+      contribution: _state.contribution + contribution,
+      warsWon: _state.warsWon + (won ? 1 : 0),
+      lastWarAt: DateTime.now(),
+    );
+    _lastEncounterSummary = won
+        ? '${WarEngine.victoryText(_state)}\n\n'
+            '+${formatNumber(stones)} spirit stones, +$contribution contribution'
+        : '${WarEngine.defeatText}\n\n'
+            '+$contribution contribution for holding the line';
+    _encounter = finished;
+    notifyListeners();
+    save();
+  }
+
+  void _completeHunt(EncounterState finished, int rounds) {
     final location = effectiveLocation();
     final loot = CombatEngine.rollLoot(_state, location, finished.beast, _rng);
     final battle = BattleResult(
@@ -396,6 +587,15 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       lifespanPills: _state.lifespanPills - 1,
       lifespanBonusYears: _state.lifespanBonusYears + 25,
     );
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  bool chooseRace(String raceId) {
+    if (_state.raceId != null) return false;
+    if (Race.catalog.every((race) => race.id != raceId)) return false;
+    _state = _state.copyWith(raceId: raceId);
     notifyListeners();
     save();
     return true;

@@ -214,6 +214,45 @@ void main() {
       expect(parsed.activeLocationId, isNull);
     });
 
+    test('version 5 saves load with phase 6 defaults', () {
+      final v5 = GameState.initial().toJson()
+        ..['version'] = 5
+        ..remove('raceId')
+        ..remove('tournamentsWon')
+        ..remove('warsWon')
+        ..remove('lastTournamentAt')
+        ..remove('lastWarAt');
+      final parsed = GameState.fromJson(v5);
+      expect(parsed.raceId, isNull);
+      expect(parsed.tournamentsWon, 0);
+      expect(parsed.warsWon, 0);
+      expect(parsed.lastTournamentAt, isNull);
+      expect(parsed.lastWarAt, isNull);
+    });
+
+    test('json roundtrip preserves race and event records', () {
+      final state = GameState.initial().copyWith(
+        raceId: 'demon',
+        tournamentsWon: 4,
+        warsWon: 2,
+        lastTournamentAt: DateTime.utc(2024, 5, 5, 12),
+        lastWarAt: DateTime.utc(2024, 5, 6, 8, 30),
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.raceId, 'demon');
+      expect(parsed.tournamentsWon, 4);
+      expect(parsed.warsWon, 2);
+      expect(parsed.lastTournamentAt, state.lastTournamentAt);
+      expect(parsed.lastWarAt, state.lastWarAt);
+    });
+
+    test('copyWith keeps raceId unless explicitly changed', () {
+      final state = GameState.initial().copyWith(raceId: 'human');
+      expect(state.copyWith(qi: 10).raceId, 'human');
+      expect(state.copyWith(raceId: 'demon').raceId, 'demon');
+      expect(state.copyWith(raceId: null).raceId, isNull);
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

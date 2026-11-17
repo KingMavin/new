@@ -7,7 +7,7 @@ import 'package:immortal_path/ui/theme/location_theme.dart';
 
 class EncounterScreen extends StatefulWidget {
   final GameController controller;
-  final WorldLocation location;
+  final WorldLocation? location;
 
   const EncounterScreen({
     super.key,
@@ -44,7 +44,8 @@ class _EncounterScreenState extends State<EncounterScreen> {
         if (encounter == null) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        final theme = themeFor(widget.location);
+        final kind = widget.controller.encounterKind;
+        final theme = themeForEncounter(kind, widget.location);
         final moment = encounter.pendingMoment;
         return Dialog.fullscreen(
           child: Column(
@@ -83,7 +84,7 @@ class _EncounterScreenState extends State<EncounterScreen> {
                             ),
                             Expanded(
                               child: Text(
-                                widget.location.name,
+                                encounterTitle(kind, widget.location),
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium

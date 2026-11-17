@@ -88,8 +88,20 @@ class EncounterEngine {
     'slashes at you',
   ];
 
-  static EncounterState begin(GameState state, Beast beast) {
+  static EncounterState begin(
+    GameState state,
+    Beast beast, {
+    EncounterMoment? opening,
+    List<String> introLines = const [],
+  }) {
     final playerMaxHp = CombatEngine.playerMaxHp(state);
+    final log = introLines.isEmpty
+        ? [
+            'You are deep in the wilds when the ${beast.name} marks you as '
+                'prey.',
+            'The ${beast.name} attacks!',
+          ]
+        : List<String>.from(introLines);
     return EncounterState(
       beast: beast,
       foeHp: beast.hp,
@@ -97,12 +109,8 @@ class EncounterEngine {
       playerHp: playerMaxHp,
       playerMaxHp: playerMaxHp,
       round: 0,
-      log: [
-        'You are deep in the wilds when the ${beast.name} marks you as '
-            'prey.',
-        'The ${beast.name} attacks!',
-      ],
-      pendingMoment: _openingMoment(beast),
+      log: log,
+      pendingMoment: opening ?? _openingMoment(beast),
     );
   }
 
@@ -675,3 +683,5 @@ extension _EncounterCopy on EncounterState {
     );
   }
 }
+
+enum EncounterKind { hunt, tournament, war }

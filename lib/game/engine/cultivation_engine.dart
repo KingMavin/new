@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
@@ -51,7 +52,8 @@ class CultivationEngine {
         technique.qiMultiplier *
         companionMultiplier *
         (1.0 + SoulEngine.qiBonus(state)) *
-        SectEngine.qiMultiplier(state);
+        SectEngine.qiMultiplier(state) *
+        RaceEngine.qiMultiplier(state);
   }
 
   static double qiToNextStage(GameState state) =>

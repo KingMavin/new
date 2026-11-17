@@ -53,6 +53,11 @@ class GameState {
   final String? pendingEventId;
   final List<String> discoveredLocations;
   final String? activeLocationId;
+  final String? raceId;
+  final int tournamentsWon;
+  final int warsWon;
+  final DateTime? lastTournamentAt;
+  final DateTime? lastWarAt;
 
   const GameState({
     required this.realmIndex,
@@ -102,6 +107,11 @@ class GameState {
     this.pendingEventId,
     this.discoveredLocations = const [],
     this.activeLocationId,
+    this.raceId,
+    this.tournamentsWon = 0,
+    this.warsWon = 0,
+    this.lastTournamentAt,
+    this.lastWarAt,
   });
 
   factory GameState.initial() => GameState(
@@ -201,6 +211,11 @@ class GameState {
     Object? pendingEventId = _unset,
     List<String>? discoveredLocations,
     Object? activeLocationId = _unset,
+    Object? raceId = _unset,
+    int? tournamentsWon,
+    int? warsWon,
+    DateTime? lastTournamentAt,
+    DateTime? lastWarAt,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -261,11 +276,16 @@ class GameState {
       activeLocationId: activeLocationId == _unset
           ? this.activeLocationId
           : activeLocationId as String?,
+      raceId: raceId == _unset ? this.raceId : raceId as String?,
+      tournamentsWon: tournamentsWon ?? this.tournamentsWon,
+      warsWon: warsWon ?? this.warsWon,
+      lastTournamentAt: lastTournamentAt ?? this.lastTournamentAt,
+      lastWarAt: lastWarAt ?? this.lastWarAt,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 5,
+        'version': 6,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -313,6 +333,11 @@ class GameState {
         'pendingEventId': pendingEventId,
         'discoveredLocations': discoveredLocations,
         'activeLocationId': activeLocationId,
+        'raceId': raceId,
+        'tournamentsWon': tournamentsWon,
+        'warsWon': warsWon,
+        'lastTournamentAt': lastTournamentAt?.toIso8601String(),
+        'lastWarAt': lastWarAt?.toIso8601String(),
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -394,5 +419,14 @@ class GameState {
                 .toList() ??
             const [],
         activeLocationId: json['activeLocationId'] as String?,
+        raceId: json['raceId'] as String?,
+        tournamentsWon: json['tournamentsWon'] as int? ?? 0,
+        warsWon: json['warsWon'] as int? ?? 0,
+        lastTournamentAt: json['lastTournamentAt'] == null
+            ? null
+            : DateTime.parse(json['lastTournamentAt'] as String),
+        lastWarAt: json['lastWarAt'] == null
+            ? null
+            : DateTime.parse(json['lastWarAt'] as String),
       );
 }

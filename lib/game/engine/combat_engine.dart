@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
@@ -67,7 +68,8 @@ class CombatEngine {
             technique.attackMultiplier *
             companionMultiplier *
             (1.0 + SoulEngine.attackBonus(state)) *
-            SectEngine.attackMultiplier(state) +
+            SectEngine.attackMultiplier(state) *
+            RaceEngine.attackMultiplier(state) +
         (state.weapon?.power ?? 0);
   }
 
@@ -77,7 +79,8 @@ class CombatEngine {
             pow(2.0, state.realmIndex) *
             (1.0 + 0.15 * state.stageIndex) *
             technique.defenseMultiplier *
-            (1.0 + SoulEngine.defenseBonus(state)) +
+            (1.0 + SoulEngine.defenseBonus(state)) *
+            RaceEngine.defenseMultiplier(state) +
         (state.armor?.power ?? 0);
   }
 
@@ -87,7 +90,8 @@ class CombatEngine {
         pow(2.0, state.realmIndex) *
         (1.0 + 0.2 * state.stageIndex) *
         technique.hpMultiplier *
-        (1.0 + SoulEngine.hpBonus(state));
+        (1.0 + SoulEngine.hpBonus(state)) *
+        RaceEngine.hpMultiplier(state);
   }
 
   static bool isLocationUnlocked(GameState state, WorldLocation location) =>
@@ -101,7 +105,8 @@ class CombatEngine {
   ) {
     final stones = location.spiritStoneReward *
         (0.8 + random.nextDouble() * 0.4) *
-        (1.0 + SoulEngine.stoneBonus(state));
+        (1.0 + SoulEngine.stoneBonus(state)) *
+        RaceEngine.stoneMultiplier(state);
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;

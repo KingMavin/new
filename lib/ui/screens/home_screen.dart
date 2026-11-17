@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
@@ -22,8 +23,24 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showOfflineReportIfNeeded();
+      _showRaceSelectionIfNeeded();
     });
+  }
+
+  void _showRaceSelectionIfNeeded() {
+    if (widget.controller.state.raceId != null) {
+      _showOfflineReportIfNeeded();
+      return;
+    }
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _RaceSelectionDialog(
+        controller: widget.controller,
+        onDone: _showOfflineReportIfNeeded,
+      ),
+    );
   }
 
   void _showOfflineReportIfNeeded() {
@@ -167,6 +184,90 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _RaceSelectionDialog extends StatelessWidget {
+  final GameController controller;
+  final VoidCallback onDone;
+
+  const _RaceSelectionDialog({required this.controller, required this.onDone});
+
+  void _choose(BuildContext context, Race race) {
+    controller.chooseRace(race.id);
+    Navigator.of(context).pop();
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(race.name),
+        content: Text(race.intro),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              onDone();
+            },
+            child: const Text('Begin the path'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Choose your origin'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final race in Race.catalog)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        race.name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        race.title,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        race.description,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        race.bonusLabel,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton.tonal(
+                        onPressed: () => _choose(context, race),
+                        child: Text('Begin as ${race.name}'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 class _RealmCard extends StatelessWidget {
   final GameState state;
 
@@ -187,6 +288,13 @@ class _RealmCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text('${state.stageName} Stage'),
             Text('Lifespan: ${state.lifespanYears} years'),
+            if (state.raceId != null) ...[
+              const SizedBox(height: 8),
+              Chip(
+                avatar: const Icon(Icons.face, size: 18),
+                label: Text(Race.byId(state.raceId!).name),
+              ),
+            ],
             if (state.ascended) ...[
               const SizedBox(height: 8),
               Chip(

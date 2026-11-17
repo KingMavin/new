@@ -45,6 +45,15 @@ backdrops (gradient art per location) rather than animations.
 - Travel between locations; raids (Sunken City of Zhao, The Bone Pits, Fallen Capital of Yan, The Void Rift) pit you against elite bosses for richer rewards
 - Static themed art: every location has a gradient backdrop and sigil used on the map and during encounters
 
+## Phase 6 — Races, tournaments & faction wars
+
+- Choose your origin at the start of a new life: Human (+10% qi gain), Demon (+15% attack, +10% health), or Demi-human (+15% defense, +10% spirit stones) — each with its own mortal-world introduction
+- Race bonuses flow through every stat: cultivation rate, combat power, and loot
+- Sect tournaments: duel a ranked disciple of your sect (1 hour cooldown) with an Opening Salute choice moment; victory earns spirit stones and sect contribution
+- Faction wars (Golden Core realm and above, 4 hour cooldown): your side’s strength — combat power, disciple levels, sect rank — is weighed against the enemy’s before a champion duel begins, and the war front narration tells you which side the ranks believe in
+- Tournaments and wars use the same narrated encounter system with their own backdrops (tournament ring, war front) and opening choice moments
+- Tournament and war results are recorded in your records
+
 ## Phase 2 — Combat & alchemy
 
 - Nine adventure zones gated by cultivation realm, each with themed beasts
@@ -90,5 +99,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Multi-wave raids and sect wars (extended narrative battles)
-2. Audio, local notifications, balance pass, optional background art packs
+1. Faction plotline: race-specific story arcs, faction reputation, and race-gated locations
+2. More choice moments per event type, larger war campaigns, and tournament seasons
+3. Audio, local notifications, balance pass, optional background art packs

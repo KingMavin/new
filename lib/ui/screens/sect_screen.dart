@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/disciple_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/engine/tournament_engine.dart';
+import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/models/disciple.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/encounter_screen.dart';
 
 class SectScreen extends StatelessWidget {
   final GameController controller;
@@ -115,6 +119,8 @@ class SectScreen extends StatelessWidget {
                 else ...[
                   _SectStatusCard(state: state, sect: sect),
                   const SizedBox(height: 16),
+                  _EventsSection(controller: controller, state: state),
+                  const SizedBox(height: 16),
                   _DisciplesSection(
                     controller: controller,
                     state: state,
@@ -173,6 +179,142 @@ class SectScreen extends StatelessWidget {
   }
 }
 
+class _EventsSection extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+
+  const _EventsSection({required this.controller, required this.state});
+
+  void _enterTournament(BuildContext context) {
+    controller.startTournament();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EncounterScreen(controller: controller, location: null),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  void _enterWar(BuildContext context) {
+    controller.startWar();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EncounterScreen(controller: controller, location: null),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  String _tournamentLabel() {
+    if (state.raceId == null) return 'Choose a race first';
+    if (state.sectId == null) return 'Join a sect first';
+    final remaining = controller.tournamentCooldownRemaining();
+    if (remaining > Duration.zero) {
+      return 'Next bout in ${formatDuration(remaining)}';
+    }
+    return 'Enter the tournament';
+  }
+
+  String _warLabel() {
+    if (state.raceId == null) return 'Choose a race first';
+    if (state.sectId == null) return 'Join a sect first';
+    if (state.realmIndex < WarEngine.requiredRealm) {
+      return 'Requires ${RealmLadder.realmName(WarEngine.requiredRealm)} realm';
+    }
+    final remaining = controller.warCooldownRemaining();
+    if (remaining > Duration.zero) {
+      return 'Next war in ${formatDuration(remaining)}';
+    }
+    return 'March to war';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Sect Events', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.emoji_events),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sect Tournament',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Duel a ranked disciple of your sect on the platform. '
+                  'Victory earns '
+                  '${formatNumber(TournamentEngine.prizeStones(state))} '
+                  'spirit stones and '
+                  '${TournamentEngine.prizeContribution(state)} contribution.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  onPressed: controller.canStartTournament()
+                      ? () => _enterTournament(context)
+                      : null,
+                  icon: const Icon(Icons.sports_kabaddi),
+                  label: Text(_tournamentLabel()),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.shield),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Faction War',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Lead your sect onto a war front. Your side\u2019s strength '
+                  '\u2014 your combat power, your disciples, your sect rank '
+                  '\u2014 is weighed against the enemy\u2019s before the '
+                  'champions meet. Victory earns '
+                  '${formatNumber(WarEngine.prizeStones(state))} spirit stones '
+                  'and ${WarEngine.prizeContribution(state)} contribution.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  onPressed: controller.canStartWar()
+                      ? () => _enterWar(context)
+                      : null,
+                  icon: const Icon(Icons.local_fire_department),
+                  label: Text(_warLabel()),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 class _SectStatusCard extends StatelessWidget {
   final GameState state;
   final Sect sect;

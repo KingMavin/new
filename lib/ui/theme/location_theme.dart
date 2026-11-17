@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:immortal_path/game/engine/encounter_engine.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 
 class LocationTheme {
@@ -79,3 +80,35 @@ const _fallbackTheme = LocationTheme(
 
 LocationTheme themeFor(WorldLocation location) =>
     _regionThemes[location.id] ?? _fallbackTheme;
+
+const _tournamentTheme = LocationTheme(
+  gradient: [Color(0xFF4E342E), Color(0xFFFFD54F)],
+  icon: Icons.emoji_events,
+);
+
+const _warTheme = LocationTheme(
+  gradient: [Color(0xFF7F1D1D), Color(0xFFFF8A80)],
+  icon: Icons.local_fire_department,
+);
+
+LocationTheme themeForEncounter(EncounterKind kind, WorldLocation? location) {
+  switch (kind) {
+    case EncounterKind.tournament:
+      return _tournamentTheme;
+    case EncounterKind.war:
+      return _warTheme;
+    case EncounterKind.hunt:
+      return location == null ? _fallbackTheme : themeFor(location);
+  }
+}
+
+String encounterTitle(EncounterKind kind, WorldLocation? location) {
+  switch (kind) {
+    case EncounterKind.tournament:
+      return 'Sect Tournament';
+    case EncounterKind.war:
+      return 'War Front';
+    case EncounterKind.hunt:
+      return location?.name ?? 'The Wilds';
+  }
+}
