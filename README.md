@@ -2,6 +2,10 @@
 
 A single-player idle cultivation RPG inspired by xianxia mythology, built with Flutter.
 
+All combat, places, and events are told through text — narrated encounters,
+choice moments, and location descriptions — brought to life with static themed
+backdrops (gradient art per location) rather than animations.
+
 ## Phase 1 — Cultivation core
 
 - Qi accumulation over time (idle) plus an active "Circulate Qi" action
@@ -29,6 +33,17 @@ A single-player idle cultivation RPG inspired by xianxia mythology, built with F
 - Random encounter events: 12 choice-based vignettes (tombs, merchants, sages, gambles) that can trigger after battle victories
 - Codex/bestiary tracking every beast species you have slain
 - Five-tab interface: Cultivate, Adventure, Alchemy, Sect, Dao
+
+## Phase 5 — World map & narrated encounters
+
+- Text-driven combat: fights unfold as narrated exchanges you step through, with live HP bars for you and the beast
+- Choice moments mid-fight: at the opening clash, when you are wounded, when the beast falters, and at random exchanges, the battle pauses for decisions — stand ground, strike first, burn your core, flee
+- Technique-gated moments: your equipped technique unlocks unique battle choices (flame eruptions, sword heart slashes, binding formations, lightning calls)
+- Choice odds scale with your stats: attack advantage raises success chances, defense helps escapes
+- World map with 15 locations across the nine realms: wilderness regions, raid locations (fallen cities and forbidden grounds with elite foes), and hidden realms that show as "??? " until discovered
+- Hidden locations are found through exploration (8% on victory) and teased through rumor hints
+- Travel between locations; raids (Sunken City of Zhao, The Bone Pits, Fallen Capital of Yan, The Void Rift) pit you against elite bosses for richer rewards
+- Static themed art: every location has a gradient backdrop and sigil used on the map and during encounters
 
 ## Phase 2 — Combat & alchemy
 
@@ -75,4 +90,5 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Phase 5 — Flame animations, audio, local notifications, balance pass
+1. Multi-wave raids and sect wars (extended narrative battles)
+2. Audio, local notifications, balance pass, optional background art packs

@@ -6,7 +6,7 @@ import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/technique.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/util/format.dart';
 
 class LootReward {
@@ -90,70 +90,16 @@ class CombatEngine {
         (1.0 + SoulEngine.hpBonus(state));
   }
 
-  static bool isZoneUnlocked(GameState state, Zone zone) =>
-      state.realmIndex >= zone.requiredRealm;
-
-  static BattleResult resolve(
-    GameState state,
-    Zone zone,
-    Beast beast, {
-    Random? rng,
-  }) {
-    final random = rng ?? Random();
-    final attack = playerAttack(state);
-    final defense = playerDefense(state);
-    var playerHp = playerMaxHp(state);
-    var beastHp = beast.hp;
-    final log = <String>[];
-    var rounds = 0;
-    var victory = false;
-
-    while (rounds < 100) {
-      rounds++;
-      final playerDamage =
-          max(1.0, attack - beast.defense) * (0.85 + random.nextDouble() * 0.3);
-      beastHp -= playerDamage;
-      log.add(
-        'Round $rounds: You strike the ${beast.name} for '
-        '${playerDamage.toStringAsFixed(1)} damage.',
-      );
-      if (beastHp <= 0) {
-        victory = true;
-        log.add('The ${beast.name} is slain!');
-        break;
-      }
-      final beastDamage =
-          max(1.0, beast.attack - defense) * (0.85 + random.nextDouble() * 0.3);
-      playerHp -= beastDamage;
-      log.add(
-        'Round $rounds: The ${beast.name} hits you for '
-        '${beastDamage.toStringAsFixed(1)} damage.',
-      );
-      if (playerHp <= 0) {
-        log.add('You barely escape with your life.');
-        break;
-      }
-    }
-
-    final loot = victory
-        ? rollLoot(state, zone, beast, random)
-        : const LootReward(spiritStones: 0, spiritHerbs: 0, beastCores: 0);
-    return BattleResult(
-      victory: victory,
-      rounds: rounds,
-      beastName: beast.name,
-      log: log,
-      loot: loot,
-    );
-  }
+  static bool isLocationUnlocked(GameState state, WorldLocation location) =>
+      state.realmIndex >= location.requiredRealm;
 
   static LootReward rollLoot(
     GameState state,
-    Zone zone,
+    WorldLocation location,
     Beast beast,
     Random random,
   ) {
-    final stones = zone.spiritStoneReward *
+    final stones = location.spiritStoneReward *
         (0.8 + random.nextDouble() * 0.4) *
         (1.0 + SoulEngine.stoneBonus(state));
     var herbs = 0;
@@ -169,17 +115,17 @@ class CombatEngine {
     if (random.nextDouble() < 0.2) {
       final roll = random.nextDouble() *
           random.nextDouble() *
-          (zone.maxEquipmentGrade + 1);
-      final grade = roll.floor().clamp(0, zone.maxEquipmentGrade).toInt();
+          (location.maxEquipmentGrade + 1);
+      final grade = roll.floor().clamp(0, location.maxEquipmentGrade).toInt();
       final slot =
           random.nextBool() ? EquipmentSlot.weapon : EquipmentSlot.armor;
       final power = (grade + 1) *
           10.0 *
-          pow(1.8, zone.requiredRealm).toDouble() *
+          pow(1.8, location.requiredRealm).toDouble() *
           (0.9 + random.nextDouble() * 0.2);
       equipment = Equipment.create(slot, grade, power);
     }
-    if (zone.requiredRealm >= 1 && random.nextDouble() < 0.04) {
+    if (location.requiredRealm >= 1 && random.nextDouble() < 0.04) {
       final undiscovered = Technique.catalog
           .where(
             (candidate) =>

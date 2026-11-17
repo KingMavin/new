@@ -5,7 +5,7 @@ import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/technique.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
 
@@ -245,7 +245,7 @@ class _CodexCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = <Widget>[];
-    for (final zone in ZoneCatalog.zones) {
+    for (final zone in WorldCatalog.locations) {
       for (final beast in zone.beasts) {
         final known = state.bestiary.contains(beast.name);
         entries.add(
@@ -280,7 +280,7 @@ class _CodexCard extends StatelessWidget {
           children: [
             Text(
               '${state.bestiary.length} of '
-              '${ZoneCatalog.zones.fold<int>(0, (sum, z) => sum + z.beasts.length)} '
+              '${WorldCatalog.locations.fold<int>(0, (sum, z) => sum + z.beasts.length)} '
               'beasts recorded',
               style: const TextStyle(fontSize: 12),
             ),

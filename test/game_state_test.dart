@@ -194,6 +194,26 @@ void main() {
       expect(kept.pendingEventId, 'ancient_tomb');
     });
 
+    test('json roundtrip preserves world discovery', () {
+      final state = GameState.initial().copyWith(
+        discoveredLocations: const ['sword_vault', 'immortal_grotto'],
+        activeLocationId: 'sword_vault',
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.discoveredLocations, ['sword_vault', 'immortal_grotto']);
+      expect(parsed.activeLocationId, 'sword_vault');
+    });
+
+    test('version 4 saves load with phase 5 defaults', () {
+      final v4 = GameState.initial().toJson()
+        ..['version'] = 4
+        ..remove('discoveredLocations')
+        ..remove('activeLocationId');
+      final parsed = GameState.fromJson(v4);
+      expect(parsed.discoveredLocations, isEmpty);
+      expect(parsed.activeLocationId, isNull);
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

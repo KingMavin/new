@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/util/format.dart';
 
 class EventChoice {
@@ -254,7 +254,7 @@ class EventEngine {
     GameState state,
     String eventId,
     int choiceIndex,
-    Zone zone, {
+    WorldLocation location, {
     Random? rng,
     double? roll,
   }) {
@@ -264,7 +264,7 @@ class EventEngine {
     final choice = event.choices[choiceIndex];
     final random = rng ?? Random();
 
-    final stoneCost = zone.spiritStoneReward * choice.stonesCostFactor;
+    final stoneCost = location.spiritStoneReward * choice.stonesCostFactor;
     if (stoneCost > 0 && state.spiritStones < stoneCost) {
       return EventOutcome(
         state: state,
@@ -296,7 +296,7 @@ class EventEngine {
     final parts = <String>[];
 
     if (success) {
-      final stoneGain = zone.spiritStoneReward * choice.stonesFactor;
+      final stoneGain = location.spiritStoneReward * choice.stonesFactor;
       if (stoneGain > 0) {
         stones += stoneGain;
         parts.add('+${formatNumber(stoneGain)} spirit stones');

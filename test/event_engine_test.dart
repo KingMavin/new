@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 
 GameState stateAt({
   double spiritStones = 0,
@@ -21,7 +21,7 @@ GameState stateAt({
 }
 
 void main() {
-  final zone = ZoneCatalog.zones.first;
+  final location = WorldCatalog.locations.first;
 
   test('catalog events have choices and unique ids', () {
     final ids = EventEngine.catalog.map((e) => e.id).toSet();
@@ -61,7 +61,7 @@ void main() {
             state,
             'spirit_spring',
             1,
-            zone,
+            location,
             roll: 0.1,
           );
           expect(outcome, isNotNull);
@@ -74,10 +74,10 @@ void main() {
             state,
             'ancient_tomb',
             0,
-            zone,
+            location,
             roll: 0.1,
           );
-          expect(outcome!.state.spiritStones, closeTo(zone.spiritStoneReward * 3, 1e-9));
+          expect(outcome!.state.spiritStones, closeTo(location.spiritStoneReward * 3, 1e-9));
         }),
 
         test('gamble failure only loses the stake', () {
@@ -86,10 +86,10 @@ void main() {
             state,
             'bandit_ambush',
             1,
-            zone,
+            location,
             roll: 0.9,
           );
-          expect(outcome!.state.spiritStones, closeTo(1000 - zone.spiritStoneReward, 1e-9));
+          expect(outcome!.state.spiritStones, closeTo(1000 - location.spiritStoneReward, 1e-9));
         }),
 
         test('refuses choices the player cannot afford', () {
@@ -98,7 +98,7 @@ void main() {
             state,
             'wandering_merchant',
             0,
-            zone,
+            location,
           );
           expect(outcome, isNotNull);
           expect(outcome!.state.spiritHerbs, 0);
@@ -107,11 +107,11 @@ void main() {
 
         test('unknown event or choice returns null', () {
           expect(
-            EventEngine.resolve(stateAt(), 'nope', 0, zone),
+            EventEngine.resolve(stateAt(), 'nope', 0, location),
             isNull,
           );
           expect(
-            EventEngine.resolve(stateAt(), 'ancient_tomb', 9, zone),
+            EventEngine.resolve(stateAt(), 'ancient_tomb', 9, location),
             isNull,
           );
         }),
@@ -123,7 +123,7 @@ void main() {
       state,
       'spirit_spring',
       0,
-      zone,
+      location,
       roll: 0.5,
     );
     expect(outcome!.state.qi, greaterThan(0));

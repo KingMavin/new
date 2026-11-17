@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 
 GameState stateAt({int realmIndex = 0, int stageIndex = 0}) {
   final base = GameState.initial();
@@ -51,47 +51,6 @@ void main() {
         CombatEngine.playerDefense(armed),
         CombatEngine.playerDefense(bare) + 30,
       );
-    });
-  });
-
-  group('resolve', () {
-    test('starter cultivator defeats a first-zone beast', () {
-      final state = stateAt();
-      final zone = ZoneCatalog.zones[0];
-      final battle = CombatEngine.resolve(state, zone, zone.beasts[0],
-          rng: Random(7));
-      expect(battle.victory, isTrue);
-      expect(battle.rounds, greaterThanOrEqualTo(1));
-      expect(battle.log, isNotEmpty);
-    });
-
-    test('weak cultivator loses against a late-zone beast', () {
-      final state = stateAt();
-      final zone = ZoneCatalog.zones[8];
-      final battle = CombatEngine.resolve(state, zone, zone.beasts[0],
-          rng: Random(7));
-      expect(battle.victory, isFalse);
-    });
-
-    test('defeat yields no loot', () {
-      final state = stateAt();
-      final zone = ZoneCatalog.zones[8];
-      final battle = CombatEngine.resolve(state, zone, zone.beasts[0],
-          rng: Random(7));
-      expect(battle.loot.spiritStones, 0);
-      expect(battle.loot.spiritHerbs, 0);
-      expect(battle.loot.beastCores, 0);
-      expect(battle.loot.equipment, isNull);
-    });
-
-    test('same seed produces the same battle', () {
-      final state = stateAt();
-      final zone = ZoneCatalog.zones[0];
-      final a = CombatEngine.resolve(state, zone, zone.beasts[0], rng: Random(42));
-      final b = CombatEngine.resolve(state, zone, zone.beasts[0], rng: Random(42));
-      expect(a.victory, b.victory);
-      expect(a.rounds, b.rounds);
-      expect(a.log, b.log);
     });
   });
 
@@ -191,22 +150,28 @@ void main() {
     });
   });
 
-  group('zone catalog', () {
-    test('nine zones with rising requirements', () {
-      expect(ZoneCatalog.zones.length, 9);
-      for (var i = 1; i < ZoneCatalog.zones.length; i++) {
+  group('world catalog', () {
+    test('nine standard regions with rising requirements', () {
+      final regions = WorldCatalog.standardLocations();
+      expect(regions.length, 9);
+      for (var i = 1; i < regions.length; i++) {
         expect(
-          ZoneCatalog.zones[i].requiredRealm,
-          greaterThan(ZoneCatalog.zones[i - 1].requiredRealm),
+          regions[i].requiredRealm,
+          greaterThan(regions[i - 1].requiredRealm),
         );
       }
     });
 
-    test('first zone is unlocked from the start', () {
-      expect(CombatEngine.isZoneUnlocked(stateAt(), ZoneCatalog.zones[0]),
-          isTrue);
-      expect(CombatEngine.isZoneUnlocked(stateAt(), ZoneCatalog.zones[8]),
-          isFalse);
+    test('first region is unlocked from the start', () {
+      final regions = WorldCatalog.standardLocations();
+      expect(
+        CombatEngine.isLocationUnlocked(stateAt(), regions[0]),
+        isTrue,
+      );
+      expect(
+        CombatEngine.isLocationUnlocked(stateAt(), regions[8]),
+        isFalse,
+      );
     });
   });
 }

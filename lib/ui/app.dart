@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/state/game_controller.dart';
-import 'package:immortal_path/ui/screens/adventure_screen.dart';
+import 'package:immortal_path/ui/screens/world_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
 import 'package:immortal_path/ui/screens/dao_screen.dart';
 import 'package:immortal_path/ui/screens/home_screen.dart';
@@ -45,7 +45,7 @@ class _MainShellState extends State<MainShell> {
         index: _index,
         children: [
           HomeScreen(controller: widget.controller),
-          AdventureScreen(controller: widget.controller),
+          WorldScreen(controller: widget.controller),
           AlchemyScreen(controller: widget.controller),
           SectScreen(controller: widget.controller),
           DaoScreen(controller: widget.controller),
@@ -61,9 +61,9 @@ class _MainShellState extends State<MainShell> {
             label: 'Cultivate',
           ),
           NavigationDestination(
-            icon: Icon(Icons.landscape_outlined),
-            selectedIcon: Icon(Icons.landscape),
-            label: 'Adventure',
+            icon: Icon(Icons.map_outlined),
+            selectedIcon: Icon(Icons.map),
+            label: 'World',
           ),
           NavigationDestination(
             icon: Icon(Icons.science_outlined),

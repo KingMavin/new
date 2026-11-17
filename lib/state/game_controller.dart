@@ -8,6 +8,7 @@ import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
+import 'package:immortal_path/game/engine/encounter_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
@@ -15,8 +16,9 @@ import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
-import 'package:immortal_path/game/models/zone.dart';
+import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
+import 'package:immortal_path/game/util/format.dart';
 
 class GameController extends ChangeNotifier with WidgetsBindingObserver {
   GameController({SaveRepository? repository})
@@ -37,8 +39,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   DateTime _lastSave = DateTime.now();
   GameState _state = GameState.initial();
   OfflineReport? _pendingOfflineReport;
+  EncounterState? _encounter;
+  String? _lastEncounterSummary;
 
   GameState get state => _state;
+  EncounterState? get encounter => _encounter;
+  String? get lastEncounterSummary => _lastEncounterSummary;
 
   @override
   void dispose() {
@@ -174,16 +180,39 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     return true;
   }
 
-  void selectZone(int index) {
-    final zones = ZoneCatalog.zones;
-    if (index < 0 || index >= zones.length) return;
-    if (_state.realmIndex < zones[index].requiredRealm) return;
-    _state = _state.copyWith(selectedZoneIndex: index);
+  bool selectLocation(String id) {
+    final location = WorldCatalog.locations.firstWhere(
+      (candidate) => candidate.id == id,
+      orElse: () => WorldCatalog.locations.first,
+    );
+    if (location.id != id) return false;
+    if (!WorldCatalog.isKnown(_state.discoveredLocations, location)) {
+      return false;
+    }
+    if (_state.realmIndex < location.requiredRealm) return false;
+    final standardIndex =
+        WorldCatalog.standardLocations().indexOf(location);
+    _state = _state.copyWith(
+      activeLocationId: id,
+      selectedZoneIndex:
+          standardIndex >= 0 ? standardIndex : _state.selectedZoneIndex,
+    );
     notifyListeners();
+    save();
+    return true;
   }
 
-  int effectiveZoneIndex() {
-    final zones = ZoneCatalog.zones;
+  WorldLocation effectiveLocation() {
+    final id = _state.activeLocationId;
+    if (id != null) {
+      final location = WorldCatalog.byId(id);
+      if (location.id == id &&
+          WorldCatalog.isKnown(_state.discoveredLocations, location) &&
+          _state.realmIndex >= location.requiredRealm) {
+        return location;
+      }
+    }
+    final zones = WorldCatalog.standardLocations();
     var index = _state.selectedZoneIndex.clamp(0, zones.length - 1).toInt();
     if (_state.realmIndex < zones[index].requiredRealm) {
       for (var i = zones.length - 1; i >= 0; i--) {
@@ -193,36 +222,127 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
         }
       }
     }
-    return index;
+    return zones[index];
   }
 
-  ExploreOutcome? explore() {
-    final zone = ZoneCatalog.zones[effectiveZoneIndex()];
-    final beast = zone.beasts[_rng.nextInt(zone.beasts.length)];
-    final battle = CombatEngine.resolve(_state, zone, beast, rng: _rng);
+  void startEncounter() {
+    final location = effectiveLocation();
+    final beast = location.beasts[_rng.nextInt(location.beasts.length)];
+    _encounter = EncounterEngine.begin(_state, beast);
+    _lastEncounterSummary = null;
+    notifyListeners();
+  }
+
+  EncounterState? advanceEncounter() {
+    final current = _encounter;
+    if (current == null || current.finished || current.pendingMoment != null) {
+      return current;
+    }
+    var next = EncounterEngine.advance(current, _state, rng: _rng);
+    if (next.finished && next.victory) {
+      _completeVictory(next, current.round + 1);
+      return _encounter;
+    }
+    _encounter = next;
+    notifyListeners();
+    return next;
+  }
+
+  EncounterState? chooseEncounterOption(int choiceIndex) {
+    final current = _encounter;
+    if (current == null || current.pendingMoment == null) return current;
+    var next = EncounterEngine.choose(
+      current,
+      _state,
+      choiceIndex,
+      rng: _rng,
+    );
+    if (next.finished && next.victory) {
+      _completeVictory(next, next.round);
+      return _encounter;
+    }
+    _encounter = next;
+    if (next.finished) {
+      _lastEncounterSummary = next.fled
+          ? 'You escaped with your life, but gained nothing.'
+          : 'You were driven from the field with nothing to show for it.';
+    }
+    notifyListeners();
+    return next;
+  }
+
+  void _completeVictory(EncounterState finished, int rounds) {
+    final location = effectiveLocation();
+    final loot = CombatEngine.rollLoot(_state, location, finished.beast, _rng);
+    final battle = BattleResult(
+      victory: true,
+      rounds: rounds,
+      beastName: finished.beast.name,
+      log: finished.log,
+      loot: loot,
+    );
     final outcome = CombatEngine.applyLoot(_state, battle);
     var updated = outcome.state;
-    if (battle.victory) {
-      final eventId = EventEngine.maybeTrigger(updated, rng: _rng);
-      if (eventId != null) {
-        updated = updated.copyWith(pendingEventId: eventId);
-      }
+
+    final lines = <String>[];
+    if (loot.spiritStones > 0) {
+      lines.add('+${formatNumber(loot.spiritStones)} spirit stones');
     }
+    if (loot.spiritHerbs > 0) lines.add('+${loot.spiritHerbs} spirit herb(s)');
+    if (loot.beastCores > 0) lines.add('+${loot.beastCores} beast core(s)');
+    if (loot.equipment != null && outcome.equipped) {
+      lines.add(
+        'Equipped ${loot.equipment!.name} (${loot.equipment!.gradeName})',
+      );
+    } else if (loot.equipment != null) {
+      lines.add(
+        'Sold ${loot.equipment!.name} for '
+        '${formatNumber(outcome.soldFor)} spirit stones',
+      );
+    }
+    if (loot.technique != null) {
+      lines.add('Discovered technique: ${loot.technique!.name}');
+    }
+    if (loot.tamedCompanion != null) {
+      lines.add('Tamed companion: ${loot.tamedCompanion!.name}');
+    }
+    _lastEncounterSummary = lines.isEmpty ? 'Nothing gained.' : lines.join('\n');
+
+    final eventId = EventEngine.maybeTrigger(updated, rng: _rng);
+    if (eventId != null) {
+      updated = updated.copyWith(pendingEventId: eventId);
+    }
+
+    final hiddenId = WorldCatalog.hiddenToDiscover(
+      updated.realmIndex,
+      updated.discoveredLocations,
+    );
+    if (hiddenId != null && _rng.nextDouble() < 0.08) {
+      updated = updated.copyWith(
+        discoveredLocations: [...updated.discoveredLocations, hiddenId],
+      );
+    }
+
     _state = updated;
+    _encounter = finished;
     notifyListeners();
     save();
-    return outcome;
+  }
+
+  void clearEncounter() {
+    _encounter = null;
+    notifyListeners();
   }
 
   EventOutcome? resolvePendingEvent(int choiceIndex) {
     final eventId = _state.pendingEventId;
     if (eventId == null) return null;
-    final zone = ZoneCatalog.zones[effectiveZoneIndex()];
+    final location = effectiveLocation();
     final outcome = EventEngine.resolve(
       _state,
       eventId,
       choiceIndex,
-      zone,
+      location,
       rng: _rng,
     );
     if (outcome == null) return null;

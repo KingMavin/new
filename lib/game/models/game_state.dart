@@ -51,6 +51,8 @@ class GameState {
   final List<String> missionLog;
   final List<String> bestiary;
   final String? pendingEventId;
+  final List<String> discoveredLocations;
+  final String? activeLocationId;
 
   const GameState({
     required this.realmIndex,
@@ -98,6 +100,8 @@ class GameState {
     this.missionLog = const [],
     this.bestiary = const [],
     this.pendingEventId,
+    this.discoveredLocations = const [],
+    this.activeLocationId,
   });
 
   factory GameState.initial() => GameState(
@@ -195,6 +199,8 @@ class GameState {
     List<String>? missionLog,
     List<String>? bestiary,
     Object? pendingEventId = _unset,
+    List<String>? discoveredLocations,
+    Object? activeLocationId = _unset,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -251,11 +257,15 @@ class GameState {
       pendingEventId: pendingEventId == _unset
           ? this.pendingEventId
           : pendingEventId as String?,
+      discoveredLocations: discoveredLocations ?? this.discoveredLocations,
+      activeLocationId: activeLocationId == _unset
+          ? this.activeLocationId
+          : activeLocationId as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 4,
+        'version': 5,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -301,6 +311,8 @@ class GameState {
         'missionLog': missionLog,
         'bestiary': bestiary,
         'pendingEventId': pendingEventId,
+        'discoveredLocations': discoveredLocations,
+        'activeLocationId': activeLocationId,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -377,5 +389,10 @@ class GameState {
                 .toList() ??
             const [],
         pendingEventId: json['pendingEventId'] as String?,
+        discoveredLocations: (json['discoveredLocations'] as List<dynamic>?)
+                ?.map((entry) => entry as String)
+                .toList() ??
+            const [],
+        activeLocationId: json['activeLocationId'] as String?,
       );
 }
