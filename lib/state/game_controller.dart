@@ -10,6 +10,7 @@ import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
 import 'package:immortal_path/game/engine/encounter_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
+import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/tournament_engine.dart';
 import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
@@ -195,7 +196,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (!WorldCatalog.isKnown(_state.discoveredLocations, location)) {
       return false;
     }
-    if (_state.realmIndex < location.requiredRealm) return false;
+    if (!CombatEngine.isLocationUnlocked(_state, location)) return false;
     final standardIndex =
         WorldCatalog.standardLocations().indexOf(location);
     _state = _state.copyWith(
@@ -214,7 +215,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       final location = WorldCatalog.byId(id);
       if (location.id == id &&
           WorldCatalog.isKnown(_state.discoveredLocations, location) &&
-          _state.realmIndex >= location.requiredRealm) {
+          CombatEngine.isLocationUnlocked(_state, location)) {
         return location;
       }
     }
@@ -426,17 +427,23 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
         ? TournamentEngine.prizeStones(_state)
         : TournamentEngine.prizeStones(_state) * 0.1;
     final contribution = won ? TournamentEngine.prizeContribution(_state) : 5;
+    final reputation = won
+        ? ReputationEngine.tournamentWinGain(_state)
+        : ReputationEngine.tournamentLossGain;
     _state = _state.copyWith(
       spiritStones: _state.spiritStones + stones,
       contribution: _state.contribution + contribution,
+      reputation: ReputationEngine.gain(_state, reputation),
       tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
       lastTournamentAt: DateTime.now(),
     );
     _lastEncounterSummary = won
         ? '${TournamentEngine.victoryText(_state)}\n\n'
-            '+${formatNumber(stones)} spirit stones, +$contribution contribution'
+            '+${formatNumber(stones)} spirit stones, +$contribution '
+            'contribution, +$reputation reputation'
         : '${TournamentEngine.defeatText}\n\n'
-            '+${formatNumber(stones)} spirit stones, +$contribution contribution';
+            '+${formatNumber(stones)} spirit stones, +$contribution '
+            'contribution, +$reputation reputation';
     _encounter = finished;
     notifyListeners();
     save();
@@ -446,17 +453,23 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final won = finished.victory;
     final stones = won ? WarEngine.prizeStones(_state) : 0.0;
     final contribution = won ? WarEngine.prizeContribution(_state) : 10;
+    final reputation = won
+        ? ReputationEngine.warWinGain(_state)
+        : ReputationEngine.warLossGain;
     _state = _state.copyWith(
       spiritStones: _state.spiritStones + stones,
       contribution: _state.contribution + contribution,
+      reputation: ReputationEngine.gain(_state, reputation),
       warsWon: _state.warsWon + (won ? 1 : 0),
       lastWarAt: DateTime.now(),
     );
     _lastEncounterSummary = won
         ? '${WarEngine.victoryText(_state)}\n\n'
-            '+${formatNumber(stones)} spirit stones, +$contribution contribution'
+            '+${formatNumber(stones)} spirit stones, +$contribution '
+            'contribution, +$reputation reputation'
         : '${WarEngine.defeatText}\n\n'
-            '+$contribution contribution for holding the line';
+            '+$contribution contribution, +$reputation reputation '
+            'for holding the line';
     _encounter = finished;
     notifyListeners();
     save();
@@ -497,6 +510,17 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (loot.tamedCompanion != null) {
       lines.add('Tamed companion: ${loot.tamedCompanion!.name}');
     }
+    final reputationGain = ReputationEngine.huntGain(updated);
+    updated = updated.copyWith(
+      reputation: ReputationEngine.gain(updated, reputationGain),
+    );
+    if (_state.raceId != null) {
+      lines.add(
+        '+$reputationGain reputation with '
+        '${ReputationEngine.factionNames[_state.raceId!]}',
+      );
+    }
+
     _lastEncounterSummary = lines.isEmpty ? 'Nothing gained.' : lines.join('\n');
 
     final eventId = EventEngine.maybeTrigger(updated, rng: _rng);

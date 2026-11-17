@@ -54,6 +54,15 @@ backdrops (gradient art per location) rather than animations.
 - Tournaments and wars use the same narrated encounter system with their own backdrops (tournament ring, war front) and opening choice moments
 - Tournament and war results are recorded in your records
 
+## Phase 7 — Faction reputation & race halls
+
+- Faction reputation: every hunt, tournament, and war earns reputation with your people’s faction (Verdant Empire, Ash Wastes Clans, or Border Forest Tribes); wars and tournaments earn far more than hunts
+- Five standing tiers: Stranger → Acknowledged → Sworn Ally → Champion → Beloved of the Heavens; each tier grants +3% qi and spirit stones
+- Faction Standing card on the world map shows all three factions, your tier, progress to the next, and your standing bonus
+- Race-specific faction halls on the map, open only to their race and only at sufficient standing: Verdant Palace of the Empire (human), Ash Sanctum of the Clans (demon), Moonveil Glade (demi-human)
+- Each hall is an elite-hunting ground with better rewards than wild regions of the same realm, with its own gradient backdrop and sigil
+- Reputation survives reincarnation — your deeds echo across lives
+
 ## Phase 2 — Combat & alchemy
 
 - Nine adventure zones gated by cultivation realm, each with themed beasts
@@ -99,6 +108,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Faction plotline: race-specific story arcs, faction reputation, and race-gated locations
+1. Faction plotline: race-specific story arcs, rival faction clashes, reputation unlocks beyond the halls
 2. More choice moments per event type, larger war campaigns, and tournament seasons
 3. Audio, local notifications, balance pass, optional background art packs

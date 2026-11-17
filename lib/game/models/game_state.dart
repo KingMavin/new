@@ -58,6 +58,7 @@ class GameState {
   final int warsWon;
   final DateTime? lastTournamentAt;
   final DateTime? lastWarAt;
+  final Map<String, int> reputation;
 
   const GameState({
     required this.realmIndex,
@@ -112,6 +113,7 @@ class GameState {
     this.warsWon = 0,
     this.lastTournamentAt,
     this.lastWarAt,
+    this.reputation = const {},
   });
 
   factory GameState.initial() => GameState(
@@ -216,6 +218,7 @@ class GameState {
     int? warsWon,
     DateTime? lastTournamentAt,
     DateTime? lastWarAt,
+    Map<String, int>? reputation,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -281,11 +284,12 @@ class GameState {
       warsWon: warsWon ?? this.warsWon,
       lastTournamentAt: lastTournamentAt ?? this.lastTournamentAt,
       lastWarAt: lastWarAt ?? this.lastWarAt,
+      reputation: reputation ?? this.reputation,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 6,
+        'version': 7,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -338,6 +342,7 @@ class GameState {
         'warsWon': warsWon,
         'lastTournamentAt': lastTournamentAt?.toIso8601String(),
         'lastWarAt': lastWarAt?.toIso8601String(),
+        'reputation': reputation,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -428,5 +433,9 @@ class GameState {
         lastWarAt: json['lastWarAt'] == null
             ? null
             : DateTime.parse(json['lastWarAt'] as String),
+        reputation: (json['reputation'] as Map<String, dynamic>?)?.map(
+              (key, value) => MapEntry(key, (value as num).toInt()),
+            ) ??
+            const {},
       );
 }

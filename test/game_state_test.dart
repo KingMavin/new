@@ -253,6 +253,24 @@ void main() {
       expect(state.copyWith(raceId: null).raceId, isNull);
     });
 
+    test('version 6 saves load with phase 7 defaults', () {
+      final v6 = GameState.initial().toJson()
+        ..['version'] = 6
+        ..remove('reputation');
+      final parsed = GameState.fromJson(v6);
+      expect(parsed.reputation, isEmpty);
+    });
+
+    test('json roundtrip preserves faction reputation', () {
+      final state = GameState.initial().copyWith(
+        raceId: 'demi_human',
+        reputation: const {'demi_human': 720, 'human': 5},
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.reputation['demi_human'], 720);
+      expect(parsed.reputation['human'], 5);
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

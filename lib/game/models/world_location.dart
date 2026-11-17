@@ -21,6 +21,8 @@ class WorldLocation {
   final String description;
   final String? discoveryHint;
   final int requiredRealm;
+  final int requiredReputation;
+  final String? raceId;
   final int dangerTier;
   final double spiritStoneReward;
   final int maxEquipmentGrade;
@@ -32,6 +34,8 @@ class WorldLocation {
     required this.type,
     required this.description,
     required this.requiredRealm,
+    this.requiredReputation = 0,
+    this.raceId,
     required this.dangerTier,
     required this.spiritStoneReward,
     required this.maxEquipmentGrade,
@@ -40,6 +44,7 @@ class WorldLocation {
   });
 
   bool get isHidden => type == 'hidden';
+  bool get isFactionHall => type == 'faction';
   bool get isForbidden => type == 'forbidden';
   bool get isFallenCity => type == 'fallenCity';
   bool get isRaid => isForbidden || isFallenCity;
@@ -52,6 +57,8 @@ class WorldLocation {
         return 'Forbidden Ground';
       case 'fallenCity':
         return 'Fallen City';
+      case 'faction':
+        return 'Faction Hall';
       default:
         return 'Wilderness';
     }
@@ -79,6 +86,7 @@ class WorldCatalog {
   static const String typeHidden = 'hidden';
   static const String typeForbidden = 'forbidden';
   static const String typeFallenCity = 'fallenCity';
+  static const String typeFaction = 'faction';
 
   static final List<WorldLocation> locations = [
     WorldLocation(
@@ -228,6 +236,60 @@ class WorldCatalog {
       ],
     ),
     WorldLocation(
+      id: 'verdant_palace',
+      name: 'Verdant Palace of the Empire',
+      type: typeFaction,
+      raceId: 'human',
+      requiredReputation: 100,
+      description:
+          'The empire\u2019s inner sanctum, open only to those its people '
+          'trust. Jade halls hum with formation arrays, and the imperial '
+          'armory stands open to honored guests.',
+      requiredRealm: 1,
+      dangerTier: 3,
+      spiritStoneReward: 80,
+      maxEquipmentGrade: 2,
+      beasts: [
+        _elite('Jade Sentinel Construct', 2.2, 'qi'),
+      ],
+    ),
+    WorldLocation(
+      id: 'ash_sanctum',
+      name: 'Ash Sanctum of the Clans',
+      type: typeFaction,
+      raceId: 'demon',
+      requiredReputation: 300,
+      description:
+          'A temple of black iron built on a vein of dragonfire, where the '
+          'old blood gathers. Only demons who have proven their strength '
+          'may walk its ember-lit corridors.',
+      requiredRealm: 2,
+      dangerTier: 4,
+      spiritStoneReward: 200,
+      maxEquipmentGrade: 3,
+      beasts: [
+        _elite('Sanctum Flame Warden', 4.84, 'attack'),
+      ],
+    ),
+    WorldLocation(
+      id: 'moonveil_glade',
+      name: 'Moonveil Glade',
+      type: typeFaction,
+      raceId: 'demi_human',
+      requiredReputation: 700,
+      description:
+          'A hidden glade deep in the border forests where beast-blooded '
+          'tribes gather under a permanent silver moon. The forest itself '
+          'bars the path of strangers.',
+      requiredRealm: 3,
+      dangerTier: 4,
+      spiritStoneReward: 600,
+      maxEquipmentGrade: 3,
+      beasts: [
+        _elite('Moonveil Stag Sovereign', 10.65, 'qi'),
+      ],
+    ),
+    WorldLocation(
       id: 'fallen_zhao',
       name: 'Sunken City of Zhao',
       type: typeFallenCity,
@@ -330,6 +392,12 @@ class WorldCatalog {
       ],
     ),
   ];
+
+  static WorldLocation? factionLocationFor(String raceId) =>
+      locations
+          .where((location) =>
+              location.isFactionHall && location.raceId == raceId)
+          .firstOrNull;
 
   static WorldLocation byId(String id) => locations.firstWhere(
         (location) => location.id == id,

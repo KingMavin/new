@@ -63,6 +63,18 @@ const _regionThemes = <String, LocationTheme>{
     gradient: [Color(0xFF0D0D26), Color(0xFF7C4DFF)],
     icon: Icons.dangerous,
   ),
+  'verdant_palace': LocationTheme(
+    gradient: [Color(0xFF1B5E20), Color(0xFFFFD54F)],
+    icon: Icons.account_balance,
+  ),
+  'ash_sanctum': LocationTheme(
+    gradient: [Color(0xFF3E2723), Color(0xFFFF5722)],
+    icon: Icons.local_fire_department,
+  ),
+  'moonveil_glade': LocationTheme(
+    gradient: [Color(0xFF1A237E), Color(0xFFB39DDB)],
+    icon: Icons.nightlight,
+  ),
   'sword_vault': LocationTheme(
     gradient: [Color(0xFF004D40), Color(0xFF64FFDA)],
     icon: Icons.visibility_off,

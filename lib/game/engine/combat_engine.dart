@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:immortal_path/game/engine/race_engine.dart';
+import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
@@ -94,8 +95,16 @@ class CombatEngine {
         RaceEngine.hpMultiplier(state);
   }
 
-  static bool isLocationUnlocked(GameState state, WorldLocation location) =>
-      state.realmIndex >= location.requiredRealm;
+  static bool isLocationUnlocked(GameState state, WorldLocation location) {
+    if (state.realmIndex < location.requiredRealm) return false;
+    if (location.requiredReputation > 0) {
+      final raceId = location.raceId;
+      if (raceId == null || state.raceId != raceId) return false;
+      return ReputationEngine.reputationOf(state, raceId) >=
+          location.requiredReputation;
+    }
+    return true;
+  }
 
   static LootReward rollLoot(
     GameState state,
@@ -106,7 +115,8 @@ class CombatEngine {
     final stones = location.spiritStoneReward *
         (0.8 + random.nextDouble() * 0.4) *
         (1.0 + SoulEngine.stoneBonus(state)) *
-        RaceEngine.stoneMultiplier(state);
+        RaceEngine.stoneMultiplier(state) *
+        (1.0 + ReputationEngine.standingBonus(state));
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;

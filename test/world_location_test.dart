@@ -56,6 +56,35 @@ void main() {
     }
   });
 
+  test('each race has one reputation-gated faction hall', () {
+    final halls = WorldCatalog.locations
+        .where((location) => location.isFactionHall)
+        .toList();
+    expect(halls.length, 3);
+    expect(
+      halls.map((location) => location.raceId).toSet(),
+      {'human', 'demon', 'demi_human'},
+    );
+    for (final hall in halls) {
+      expect(hall.requiredReputation, greaterThan(0), reason: hall.id);
+      expect(hall.isRaid, isFalse, reason: hall.id);
+      expect(hall.beasts.length, 1, reason: hall.id);
+      expect(hall.beasts.first.hp, greaterThan(0), reason: hall.id);
+      expect(
+        WorldCatalog.factionLocationFor(hall.raceId!)!.id,
+        hall.id,
+        reason: hall.id,
+      );
+    }
+    expect(WorldCatalog.factionLocationFor('unknown_race'), isNull);
+  });
+
+  test('faction halls are excluded from standard regions', () {
+    final regions = WorldCatalog.standardLocations();
+    expect(regions.length, 9);
+    expect(regions.any((location) => location.isFactionHall), isFalse);
+  });
+
   test('hiddenToDiscover respects realm gating and discovery', () {
     expect(WorldCatalog.hiddenToDiscover(0, const []), isNull);
     expect(WorldCatalog.hiddenToDiscover(3, const []), 'sword_vault');
