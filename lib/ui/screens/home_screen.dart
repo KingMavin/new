@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
+import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/util/format.dart';
@@ -133,6 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 const SizedBox(height: 16),
                 _StatsCard(state: state),
+                if (state.ascended) ...[
+                  const SizedBox(height: 16),
+                  _ReincarnationCard(
+                    controller: widget.controller,
+                    state: state,
+                  ),
+                ],
               ],
             ),
           ),
@@ -233,6 +241,78 @@ class _QiCard extends StatelessWidget {
               value: state.ascended ? 1.0 : progress,
               minHeight: 10,
               borderRadius: BorderRadius.circular(8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReincarnationCard extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+
+  const _ReincarnationCard({
+    required this.controller,
+    required this.state,
+  });
+
+  void _confirmReincarnate(BuildContext context) {
+    final gain = SoulEngine.soulPowerGain(state);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reincarnate?'),
+        content: Text(
+          'Your cultivation, treasures, and sect ties will scatter like '
+          'morning mist. In return your soul will crystallize into '
+          '$gain soul power.\n\n'
+          'Kept: half your spirit stones, discovered techniques, your '
+          'companion, your codex, and all soul upgrades.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Not yet'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              controller.reincarnate();
+            },
+            child: const Text('Embrace rebirth'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gain = SoulEngine.soulPowerGain(state);
+    return Card(
+      color: Theme.of(context).colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reincarnation',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Soul power: ${state.soulPower} \u00b7 '
+              'Reincarnations: ${state.reincarnations}\n'
+              'Reincarnating now grants $gain soul power.',
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: () => _confirmReincarnate(context),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('Reincarnate'),
             ),
           ],
         ),

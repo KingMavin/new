@@ -5,6 +5,7 @@ import 'package:immortal_path/ui/screens/adventure_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
 import 'package:immortal_path/ui/screens/dao_screen.dart';
 import 'package:immortal_path/ui/screens/home_screen.dart';
+import 'package:immortal_path/ui/screens/sect_screen.dart';
 
 class ImmortalPathApp extends StatelessWidget {
   final GameController controller;
@@ -46,6 +47,7 @@ class _MainShellState extends State<MainShell> {
           HomeScreen(controller: widget.controller),
           AdventureScreen(controller: widget.controller),
           AlchemyScreen(controller: widget.controller),
+          SectScreen(controller: widget.controller),
           DaoScreen(controller: widget.controller),
         ],
       ),
@@ -67,6 +69,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.science_outlined),
             selectedIcon: Icon(Icons.science),
             label: 'Alchemy',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups),
+            label: 'Sect',
           ),
           NavigationDestination(
             icon: Icon(Icons.auto_stories_outlined),

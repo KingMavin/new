@@ -1,8 +1,11 @@
 import 'companion.dart';
+import 'disciple.dart';
 import 'equipment.dart';
 import 'realm_ladder.dart';
 
 class GameState {
+  static const Object _unset = Object();
+
   final int realmIndex;
   final int stageIndex;
   final double qi;
@@ -39,6 +42,15 @@ class GameState {
   final List<String> tribulationLog;
   final int tribulationsSurvived;
   final int tribulationsFailed;
+  final int soulPower;
+  final int reincarnations;
+  final Map<String, int> soulUpgrades;
+  final String? sectId;
+  final int contribution;
+  final List<Disciple> disciples;
+  final List<String> missionLog;
+  final List<String> bestiary;
+  final String? pendingEventId;
 
   const GameState({
     required this.realmIndex,
@@ -77,6 +89,15 @@ class GameState {
     required this.tribulationLog,
     required this.tribulationsSurvived,
     required this.tribulationsFailed,
+    this.soulPower = 0,
+    this.reincarnations = 0,
+    this.soulUpgrades = const {},
+    this.sectId,
+    this.contribution = 0,
+    this.disciples = const [],
+    this.missionLog = const [],
+    this.bestiary = const [],
+    this.pendingEventId,
   });
 
   factory GameState.initial() => GameState(
@@ -165,6 +186,15 @@ class GameState {
     List<String>? tribulationLog,
     int? tribulationsSurvived,
     int? tribulationsFailed,
+    int? soulPower,
+    int? reincarnations,
+    Map<String, int>? soulUpgrades,
+    Object? sectId = _unset,
+    int? contribution,
+    List<Disciple>? disciples,
+    List<String>? missionLog,
+    List<String>? bestiary,
+    Object? pendingEventId = _unset,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -210,11 +240,22 @@ class GameState {
       tribulationsSurvived:
           tribulationsSurvived ?? this.tribulationsSurvived,
       tribulationsFailed: tribulationsFailed ?? this.tribulationsFailed,
+      soulPower: soulPower ?? this.soulPower,
+      reincarnations: reincarnations ?? this.reincarnations,
+      soulUpgrades: soulUpgrades ?? this.soulUpgrades,
+      sectId: sectId == _unset ? this.sectId : sectId as String?,
+      contribution: contribution ?? this.contribution,
+      disciples: disciples ?? this.disciples,
+      missionLog: missionLog ?? this.missionLog,
+      bestiary: bestiary ?? this.bestiary,
+      pendingEventId: pendingEventId == _unset
+          ? this.pendingEventId
+          : pendingEventId as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 3,
+        'version': 4,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -251,6 +292,15 @@ class GameState {
         'tribulationLog': tribulationLog,
         'tribulationsSurvived': tribulationsSurvived,
         'tribulationsFailed': tribulationsFailed,
+        'soulPower': soulPower,
+        'reincarnations': reincarnations,
+        'soulUpgrades': soulUpgrades,
+        'sectId': sectId,
+        'contribution': contribution,
+        'disciples': disciples.map((d) => d.toJson()).toList(),
+        'missionLog': missionLog,
+        'bestiary': bestiary,
+        'pendingEventId': pendingEventId,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -303,5 +353,29 @@ class GameState {
             const [],
         tribulationsSurvived: json['tribulationsSurvived'] as int? ?? 0,
         tribulationsFailed: json['tribulationsFailed'] as int? ?? 0,
+        soulPower: json['soulPower'] as int? ?? 0,
+        reincarnations: json['reincarnations'] as int? ?? 0,
+        soulUpgrades: (json['soulUpgrades'] as Map<String, dynamic>?)
+                ?.map(
+                  (key, value) => MapEntry(key, (value as num).toInt()),
+                ) ??
+            const {},
+        sectId: json['sectId'] as String?,
+        contribution: json['contribution'] as int? ?? 0,
+        disciples: (json['disciples'] as List<dynamic>?)
+                ?.map(
+                  (entry) => Disciple.fromJson(entry as Map<String, dynamic>),
+                )
+                .toList() ??
+            const [],
+        missionLog: (json['missionLog'] as List<dynamic>?)
+                ?.map((entry) => entry as String)
+                .toList() ??
+            const [],
+        bestiary: (json['bestiary'] as List<dynamic>?)
+                ?.map((entry) => entry as String)
+                .toList() ??
+            const [],
+        pendingEventId: json['pendingEventId'] as String?,
       );
 }

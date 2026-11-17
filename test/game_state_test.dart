@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:immortal_path/game/models/companion.dart';
+import 'package:immortal_path/game/models/disciple.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
@@ -149,6 +150,70 @@ void main() {
       expect(parsed.tribulationHp, 300);
       expect(parsed.tribulationTargetRealm, 2);
       expect(parsed.tribulationLog, ['Dark clouds gather.', 'Wave 1 survived.']);
+    });
+
+    test('json roundtrip preserves soul, sect, and disciples', () {
+      final state = GameState.initial().copyWith(
+        soulPower: 320,
+        reincarnations: 2,
+        soulUpgrades: const {'qi_attunement': 3, 'iron_soul': 1},
+        sectId: 'pill_valley',
+        contribution: 450,
+        disciples: const [
+          Disciple(name: 'Lin Xiao', level: 3),
+          Disciple(
+            name: 'Bai Xue',
+            level: 2,
+            missionType: 'hunt',
+            missionHours: 2,
+          ),
+        ],
+        missionLog: const ['Lin Xiao returned.'],
+        bestiary: const ['Ironhide Boar'],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.soulPower, 320);
+      expect(parsed.reincarnations, 2);
+      expect(parsed.soulUpgrades, {'qi_attunement': 3, 'iron_soul': 1});
+      expect(parsed.sectId, 'pill_valley');
+      expect(parsed.contribution, 450);
+      expect(parsed.disciples.length, 2);
+      expect(parsed.disciples[1].missionType, 'hunt');
+      expect(parsed.missionLog, ['Lin Xiao returned.']);
+      expect(parsed.bestiary, ['Ironhide Boar']);
+    });
+
+    test('pending event can be set and cleared through copyWith', () {
+      final state = GameState.initial().copyWith(
+        pendingEventId: 'ancient_tomb',
+      );
+      expect(state.pendingEventId, 'ancient_tomb');
+      final cleared = state.copyWith(pendingEventId: null);
+      expect(cleared.pendingEventId, isNull);
+      final kept = state.copyWith(qi: 10);
+      expect(kept.pendingEventId, 'ancient_tomb');
+    });
+
+    test('version 3 saves load with phase 4 defaults', () {
+      final v3 = GameState.initial().toJson()
+        ..['version'] = 3
+        ..remove('soulPower')
+        ..remove('reincarnations')
+        ..remove('soulUpgrades')
+        ..remove('sectId')
+        ..remove('contribution')
+        ..remove('disciples')
+        ..remove('missionLog')
+        ..remove('bestiary')
+        ..remove('pendingEventId');
+      final parsed = GameState.fromJson(v3);
+      expect(parsed.soulPower, 0);
+      expect(parsed.reincarnations, 0);
+      expect(parsed.soulUpgrades, isEmpty);
+      expect(parsed.sectId, isNull);
+      expect(parsed.disciples, isEmpty);
+      expect(parsed.bestiary, isEmpty);
+      expect(parsed.pendingEventId, isNull);
     });
 
     test('version 2 saves load with phase 3 defaults', () {

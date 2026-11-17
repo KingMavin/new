@@ -7,9 +7,14 @@ import 'package:flutter/widgets.dart';
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
+import 'package:immortal_path/game/engine/disciple_engine.dart';
+import 'package:immortal_path/game/engine/event_engine.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/zone.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
 
@@ -74,7 +79,20 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       _lastSave = now;
       save();
     }
+    _checkDiscipleMissions(now);
     notifyListeners();
+  }
+
+  void _checkDiscipleMissions(DateTime now) {
+    var updated = _state;
+    for (var i = 0; i < updated.disciples.length; i++) {
+      final report = DiscipleEngine.collectIfReady(updated, i, now: now);
+      if (report != null) updated = report.state;
+    }
+    if (!identical(updated, _state)) {
+      _state = updated;
+      save();
+    }
   }
 
   void _applyOfflineGains() {
@@ -183,10 +201,35 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final beast = zone.beasts[_rng.nextInt(zone.beasts.length)];
     final battle = CombatEngine.resolve(_state, zone, beast, rng: _rng);
     final outcome = CombatEngine.applyLoot(_state, battle);
-    _state = outcome.state;
+    var updated = outcome.state;
+    if (battle.victory) {
+      final eventId = EventEngine.maybeTrigger(updated, rng: _rng);
+      if (eventId != null) {
+        updated = updated.copyWith(pendingEventId: eventId);
+      }
+    }
+    _state = updated;
     notifyListeners();
     save();
     return outcome;
+  }
+
+  EventOutcome? resolvePendingEvent(int choiceIndex) {
+    final eventId = _state.pendingEventId;
+    if (eventId == null) return null;
+    final zone = ZoneCatalog.zones[effectiveZoneIndex()];
+    final outcome = EventEngine.resolve(
+      _state,
+      eventId,
+      choiceIndex,
+      zone,
+      rng: _rng,
+    );
+    if (outcome == null) return null;
+    _state = outcome.state.copyWith(pendingEventId: null);
+    notifyListeners();
+    save();
+    return EventOutcome(state: _state, message: outcome.message);
   }
 
   bool craft(String recipeId) {
@@ -233,6 +276,61 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       lifespanPills: _state.lifespanPills - 1,
       lifespanBonusYears: _state.lifespanBonusYears + 25,
     );
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  void reincarnate() {
+    if (!SoulEngine.canReincarnate(_state)) return;
+    _state = SoulEngine.reincarnate(_state);
+    notifyListeners();
+    save();
+  }
+
+  bool buySoulUpgrade(String id) {
+    final upgrade = SoulUpgrade.byId(id);
+    final updated = SoulEngine.buyUpgrade(_state, upgrade);
+    if (identical(updated, _state)) return false;
+    _state = updated;
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  bool joinSect(String sectId) {
+    if (!SectEngine.canJoin(_state)) return false;
+    _state = SectEngine.join(_state, sectId);
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  void leaveSect() {
+    if (_state.sectId == null) return;
+    _state = _state.copyWith(
+      sectId: null,
+      contribution: 0,
+      disciples: const [],
+      missionLog: const [],
+    );
+    notifyListeners();
+    save();
+  }
+
+  bool recruitDisciple() {
+    final updated = DiscipleEngine.recruit(_state, rng: _rng);
+    if (identical(updated, _state)) return false;
+    _state = updated;
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  bool dispatchDisciple(int index, String missionId, double hours) {
+    final updated = DiscipleEngine.dispatch(_state, index, missionId, hours);
+    if (identical(updated, _state)) return false;
+    _state = updated;
     notifyListeners();
     save();
     return true;

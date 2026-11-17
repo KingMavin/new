@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/technique.dart';
@@ -47,7 +49,9 @@ class CultivationEngine {
     return realmMultiplier *
         stageMultiplier *
         technique.qiMultiplier *
-        companionMultiplier;
+        companionMultiplier *
+        (1.0 + SoulEngine.qiBonus(state)) *
+        SectEngine.qiMultiplier(state);
   }
 
   static double qiToNextStage(GameState state) =>
@@ -68,7 +72,9 @@ class CultivationEngine {
     final technique = Technique.byId(state.techniqueId);
     final chance = breakthroughChance(state) +
         state.breakthroughBonus +
-        technique.breakthroughBonus;
+        technique.breakthroughBonus +
+        SoulEngine.breakthroughBonus(state) +
+        SectEngine.breakthroughBonus(state);
     return chance.clamp(0.05, 0.95).toDouble();
   }
 

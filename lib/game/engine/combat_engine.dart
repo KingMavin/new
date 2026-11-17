@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
@@ -28,12 +30,14 @@ class LootReward {
 class BattleResult {
   final bool victory;
   final int rounds;
+  final String beastName;
   final List<String> log;
   final LootReward loot;
 
   const BattleResult({
     required this.victory,
     required this.rounds,
+    this.beastName = '',
     required this.log,
     required this.loot,
   });
@@ -61,7 +65,9 @@ class CombatEngine {
             pow(2.0, state.realmIndex) *
             (1.0 + 0.15 * state.stageIndex) *
             technique.attackMultiplier *
-            companionMultiplier +
+            companionMultiplier *
+            (1.0 + SoulEngine.attackBonus(state)) *
+            SectEngine.attackMultiplier(state) +
         (state.weapon?.power ?? 0);
   }
 
@@ -70,7 +76,8 @@ class CombatEngine {
     return 5.0 *
             pow(2.0, state.realmIndex) *
             (1.0 + 0.15 * state.stageIndex) *
-            technique.defenseMultiplier +
+            technique.defenseMultiplier *
+            (1.0 + SoulEngine.defenseBonus(state)) +
         (state.armor?.power ?? 0);
   }
 
@@ -79,7 +86,8 @@ class CombatEngine {
     return 100.0 *
         pow(2.0, state.realmIndex) *
         (1.0 + 0.2 * state.stageIndex) *
-        technique.hpMultiplier;
+        technique.hpMultiplier *
+        (1.0 + SoulEngine.hpBonus(state));
   }
 
   static bool isZoneUnlocked(GameState state, Zone zone) =>
@@ -133,6 +141,7 @@ class CombatEngine {
     return BattleResult(
       victory: victory,
       rounds: rounds,
+      beastName: beast.name,
       log: log,
       loot: loot,
     );
@@ -144,7 +153,9 @@ class CombatEngine {
     Beast beast,
     Random random,
   ) {
-    final stones = zone.spiritStoneReward * (0.8 + random.nextDouble() * 0.4);
+    final stones = zone.spiritStoneReward *
+        (0.8 + random.nextDouble() * 0.4) *
+        (1.0 + SoulEngine.stoneBonus(state));
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;
@@ -207,6 +218,14 @@ class CombatEngine {
       battlesWon: state.battlesWon + (battle.victory ? 1 : 0),
       battlesLost: state.battlesLost + (battle.victory ? 0 : 1),
     );
+
+    if (battle.victory &&
+        battle.beastName.isNotEmpty &&
+        !updated.bestiary.contains(battle.beastName)) {
+      updated = updated.copyWith(
+        bestiary: [...updated.bestiary, battle.beastName],
+      );
+    }
 
     var equipped = false;
     var soldFor = 0.0;

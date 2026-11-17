@@ -19,6 +19,17 @@ A single-player idle cultivation RPG inspired by xianxia mythology, built with F
 - Six cultivation techniques with real tradeoffs (Flame Meridian Art, Iron Body Sutra, Sword Heart Sutra, Mystic Formation Art, Thunder Refining Sutra) — found as rare scrolls in zones
 - Spirit beast companions: 8% tame chance on victories, qi- or attack-type bonuses, fed with beast cores up to level 10
 
+## Phase 4 — Reincarnation, sects & the wider world
+
+- Reincarnation prestige: after ascending, crystallize your life into soul power and start over
+- Soul shop with five permanent upgrades (qi, attack, hp/defense, spirit stone gains, breakthrough chance) that survive every rebirth
+- Rebirth keeps half your spirit stones, all discovered techniques, your companion, your bestiary, and all soul upgrades
+- Three joinable sects (Heavenly Sword Sect, Myriad Pill Valley, Mystic Formation Hall) with four contribution ranks (Outer Disciple → Elder) and escalating bonuses
+- Disciples: recruit up to three, dispatch them on timed idle missions (herbs, stones, cores) that grant contribution and level them up; missions complete even while the app is closed
+- Random encounter events: 12 choice-based vignettes (tombs, merchants, sages, gambles) that can trigger after battle victories
+- Codex/bestiary tracking every beast species you have slain
+- Five-tab interface: Cultivate, Adventure, Alchemy, Sect, Dao
+
 ## Phase 2 — Combat & alchemy
 
 - Nine adventure zones gated by cultivation realm, each with themed beasts
@@ -64,5 +75,4 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Phase 4 — reincarnation/prestige, sects and disciples, random encounter events, codex
-2. Phase 5 — Flame animations, audio, local notifications, balance pass
+1. Phase 5 — Flame animations, audio, local notifications, balance pass

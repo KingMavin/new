@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/combat_engine.dart';
+import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/zone.dart';
@@ -69,6 +70,38 @@ class _AdventureScreenState extends State<AdventureScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Continue'),
           ),
+        ],
+      ),
+    ).then((_) => _maybeShowEvent());
+  }
+
+  void _maybeShowEvent() {
+    final eventId = widget.controller.state.pendingEventId;
+    if (eventId == null || !mounted) return;
+    final event = EventEngine.byId(eventId);
+    if (event == null) return;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(event.title),
+        content: Text(event.description),
+        actions: [
+          for (var i = 0; i < event.choices.length; i++)
+            TextButton(
+              onPressed: () {
+                final outcome = widget.controller.resolvePendingEvent(i);
+                Navigator.of(dialogContext).pop();
+                if (outcome != null && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(outcome.message),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+              child: Text(event.choices[i].label),
+            ),
         ],
       ),
     );
