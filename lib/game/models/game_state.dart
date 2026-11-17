@@ -1,3 +1,4 @@
+import 'companion.dart';
 import 'equipment.dart';
 import 'realm_ladder.dart';
 
@@ -25,6 +26,19 @@ class GameState {
   final int battlesWon;
   final int battlesLost;
   final int equipmentSold;
+  final String techniqueId;
+  final List<String> discoveredTechniques;
+  final Companion? companion;
+  final bool tribulationActive;
+  final int tribulationWavesTotal;
+  final int tribulationWavesCleared;
+  final double tribulationHp;
+  final double tribulationMaxHp;
+  final int tribulationTargetRealm;
+  final double tribulationDeflectBonus;
+  final List<String> tribulationLog;
+  final int tribulationsSurvived;
+  final int tribulationsFailed;
 
   const GameState({
     required this.realmIndex,
@@ -50,6 +64,19 @@ class GameState {
     required this.battlesWon,
     required this.battlesLost,
     required this.equipmentSold,
+    required this.techniqueId,
+    required this.discoveredTechniques,
+    required this.companion,
+    required this.tribulationActive,
+    required this.tribulationWavesTotal,
+    required this.tribulationWavesCleared,
+    required this.tribulationHp,
+    required this.tribulationMaxHp,
+    required this.tribulationTargetRealm,
+    required this.tribulationDeflectBonus,
+    required this.tribulationLog,
+    required this.tribulationsSurvived,
+    required this.tribulationsFailed,
   });
 
   factory GameState.initial() => GameState(
@@ -76,6 +103,19 @@ class GameState {
         battlesWon: 0,
         battlesLost: 0,
         equipmentSold: 0,
+        techniqueId: 'basic',
+        discoveredTechniques: const ['basic'],
+        companion: null,
+        tribulationActive: false,
+        tribulationWavesTotal: 0,
+        tribulationWavesCleared: 0,
+        tribulationHp: 0,
+        tribulationMaxHp: 0,
+        tribulationTargetRealm: 0,
+        tribulationDeflectBonus: 0,
+        tribulationLog: const [],
+        tribulationsSurvived: 0,
+        tribulationsFailed: 0,
       );
 
   int get globalStageIndex =>
@@ -112,6 +152,19 @@ class GameState {
     int? battlesWon,
     int? battlesLost,
     int? equipmentSold,
+    String? techniqueId,
+    List<String>? discoveredTechniques,
+    Companion? companion,
+    bool? tribulationActive,
+    int? tribulationWavesTotal,
+    int? tribulationWavesCleared,
+    double? tribulationHp,
+    double? tribulationMaxHp,
+    int? tribulationTargetRealm,
+    double? tribulationDeflectBonus,
+    List<String>? tribulationLog,
+    int? tribulationsSurvived,
+    int? tribulationsFailed,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -138,11 +191,30 @@ class GameState {
       battlesWon: battlesWon ?? this.battlesWon,
       battlesLost: battlesLost ?? this.battlesLost,
       equipmentSold: equipmentSold ?? this.equipmentSold,
+      techniqueId: techniqueId ?? this.techniqueId,
+      discoveredTechniques:
+          discoveredTechniques ?? this.discoveredTechniques,
+      companion: companion ?? this.companion,
+      tribulationActive: tribulationActive ?? this.tribulationActive,
+      tribulationWavesTotal:
+          tribulationWavesTotal ?? this.tribulationWavesTotal,
+      tribulationWavesCleared:
+          tribulationWavesCleared ?? this.tribulationWavesCleared,
+      tribulationHp: tribulationHp ?? this.tribulationHp,
+      tribulationMaxHp: tribulationMaxHp ?? this.tribulationMaxHp,
+      tribulationTargetRealm:
+          tribulationTargetRealm ?? this.tribulationTargetRealm,
+      tribulationDeflectBonus:
+          tribulationDeflectBonus ?? this.tribulationDeflectBonus,
+      tribulationLog: tribulationLog ?? this.tribulationLog,
+      tribulationsSurvived:
+          tribulationsSurvived ?? this.tribulationsSurvived,
+      tribulationsFailed: tribulationsFailed ?? this.tribulationsFailed,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 2,
+        'version': 3,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -166,6 +238,19 @@ class GameState {
         'battlesWon': battlesWon,
         'battlesLost': battlesLost,
         'equipmentSold': equipmentSold,
+        'techniqueId': techniqueId,
+        'discoveredTechniques': discoveredTechniques,
+        'companion': companion?.toJson(),
+        'tribulationActive': tribulationActive,
+        'tribulationWavesTotal': tribulationWavesTotal,
+        'tribulationWavesCleared': tribulationWavesCleared,
+        'tribulationHp': tribulationHp,
+        'tribulationMaxHp': tribulationMaxHp,
+        'tribulationTargetRealm': tribulationTargetRealm,
+        'tribulationDeflectBonus': tribulationDeflectBonus,
+        'tribulationLog': tribulationLog,
+        'tribulationsSurvived': tribulationsSurvived,
+        'tribulationsFailed': tribulationsFailed,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -196,5 +281,27 @@ class GameState {
         battlesWon: json['battlesWon'] as int? ?? 0,
         battlesLost: json['battlesLost'] as int? ?? 0,
         equipmentSold: json['equipmentSold'] as int? ?? 0,
+        techniqueId: json['techniqueId'] as String? ?? 'basic',
+        discoveredTechniques: (json['discoveredTechniques'] as List<dynamic>?)
+                ?.map((entry) => entry as String)
+                .toList() ??
+            ['basic'],
+        companion: json['companion'] == null
+            ? null
+            : Companion.fromJson(json['companion'] as Map<String, dynamic>),
+        tribulationActive: json['tribulationActive'] as bool? ?? false,
+        tribulationWavesTotal: json['tribulationWavesTotal'] as int? ?? 0,
+        tribulationWavesCleared: json['tribulationWavesCleared'] as int? ?? 0,
+        tribulationHp: (json['tribulationHp'] as num?)?.toDouble() ?? 0,
+        tribulationMaxHp: (json['tribulationMaxHp'] as num?)?.toDouble() ?? 0,
+        tribulationTargetRealm: json['tribulationTargetRealm'] as int? ?? 0,
+        tribulationDeflectBonus:
+            (json['tribulationDeflectBonus'] as num?)?.toDouble() ?? 0,
+        tribulationLog: (json['tribulationLog'] as List<dynamic>?)
+                ?.map((entry) => entry as String)
+                .toList() ??
+            const [],
+        tribulationsSurvived: json['tribulationsSurvived'] as int? ?? 0,
+        tribulationsFailed: json['tribulationsFailed'] as int? ?? 0,
       );
 }

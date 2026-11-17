@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
+import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 
 GameState stateAt({
@@ -41,6 +42,29 @@ void main() {
     test('initial rate is 1 qi per second', () {
       expect(CultivationEngine.qiPerSecond(stateAt()), 1.0);
     });
+
+    test('technique multiplier applies', () {
+      final basic = stateAt();
+      final flame = basic.copyWith(techniqueId: 'flame');
+      expect(
+        CultivationEngine.qiPerSecond(flame),
+        closeTo(CultivationEngine.qiPerSecond(basic) * 1.5, 1e-9),
+      );
+    });
+
+    test('qi-type companion multiplier applies', () {
+      final withCompanion = stateAt().copyWith(
+        companion: const Companion(
+          name: 'Ice Crow',
+          bonusType: 'qi',
+          level: 5,
+        ),
+      );
+      expect(
+        CultivationEngine.qiPerSecond(withCompanion),
+        closeTo(CultivationEngine.qiPerSecond(stateAt()) * 1.2, 1e-9),
+      );
+    });
   });
 
   group('qiToNextStage', () {
@@ -62,10 +86,11 @@ void main() {
     });
   });
 
-  group('attemptBreakthrough', () {
+  group('attemptStageBreakthrough', () {
     test('success advances stage and resets qi', () {
       final state = stateAt(qi: 100000);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);
+      final result =
+          CultivationEngine.attemptStageBreakthrough(state, roll: 0.0);
       expect(result.success, isTrue);
       expect(result.state.stageIndex, 1);
       expect(result.state.qi, 0);
@@ -74,63 +99,59 @@ void main() {
 
     test('failure costs 25 percent of qi', () {
       final state = stateAt(qi: 100);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.999);
+      final result =
+          CultivationEngine.attemptStageBreakthrough(state, roll: 0.999);
       expect(result.success, isFalse);
       expect(result.state.qi, closeTo(75, 0.001));
       expect(result.state.breakthroughsFailed, 1);
     });
 
-    test('major breakthrough advances realm to early stage', () {
+    test('refuses to run at a realm peak, a tribulation is required', () {
       final state = stateAt(realmIndex: 0, stageIndex: 3, qi: 1e6);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);
-      expect(result.state.realmIndex, 1);
-      expect(result.state.stageIndex, 0);
-      expect(result.state.qi, 0);
+      final result =
+          CultivationEngine.attemptStageBreakthrough(state, roll: 0.0);
+      expect(result.success, isFalse);
+      expect(result.state.realmIndex, 0);
+      expect(result.state.stageIndex, 3);
     });
 
-    test('major breakthrough at final realm grants ascension', () {
-      final state = stateAt(realmIndex: 8, stageIndex: 3, qi: 1e12);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);
-      expect(result.state.ascended, isTrue);
+    test('pill bonus is consumed on success', () {
+      final state = stateAt(qi: 100000).copyWith(breakthroughBonus: 0.2);
+      final result =
+          CultivationEngine.attemptStageBreakthrough(state, roll: 0.92);
+      expect(result.success, isTrue);
+      expect(result.state.breakthroughBonus, 0);
     });
 
-    test('ascended cultivators cannot attempt breakthroughs', () {
-      final state = stateAt(realmIndex: 8, stageIndex: 3, qi: 1e12).copyWith(
-        ascended: true,
+    test('effective chance is capped and floored', () {
+      expect(
+        CultivationEngine.effectiveBreakthroughChance(
+          stateAt(qi: 100000).copyWith(breakthroughBonus: 0.5),
+        ),
+        0.95,
       );
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);
-      expect(result.state.ascended, isTrue);
-      expect(result.state.realmIndex, 8);
+      expect(
+        CultivationEngine.effectiveBreakthroughChance(
+          stateAt(stageIndex: 3, qi: 100000).copyWith(
+            techniqueId: 'flame',
+          ),
+        ),
+        0.05,
+      );
     });
 
-    test('pill bonus raises effective chance and is consumed on success', () {
-      final state = stateAt(realmIndex: 0, stageIndex: 3, qi: 1e6)
-          .copyWith(breakthroughBonus: 0.2);
+    test('formation technique adds breakthrough bonus', () {
+      final state = stateAt(qi: 100000).copyWith(techniqueId: 'formation');
       expect(
         CultivationEngine.effectiveBreakthroughChance(state),
-        closeTo(0.8, 1e-9),
+        closeTo(0.95, 1e-9),
       );
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.85);
-      expect(result.success, isTrue);
-      expect(result.state.realmIndex, 1);
-      expect(result.state.breakthroughBonus, 0);
-    });
-
-    test('pill bonus is consumed on failure too', () {
-      final state = stateAt(qi: 100000).copyWith(breakthroughBonus: 0.2);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.999);
-      expect(result.success, isFalse);
-      expect(result.state.breakthroughBonus, 0);
-    });
-
-    test('effective chance is capped at 95 percent', () {
-      final state = stateAt(qi: 100000).copyWith(breakthroughBonus: 0.5);
-      expect(CultivationEngine.effectiveBreakthroughChance(state), 0.95);
     });
 
     test('not ready returns unchanged state', () {
       final state = stateAt(qi: 10);
-      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);
+      final result =
+          CultivationEngine.attemptStageBreakthrough(state, roll: 0.0);
       expect(result.state.qi, 10);
       expect(result.success, isFalse);
     });

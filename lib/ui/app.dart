@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/adventure_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
+import 'package:immortal_path/ui/screens/dao_screen.dart';
 import 'package:immortal_path/ui/screens/home_screen.dart';
 
 class ImmortalPathApp extends StatelessWidget {
@@ -45,6 +46,7 @@ class _MainShellState extends State<MainShell> {
           HomeScreen(controller: widget.controller),
           AdventureScreen(controller: widget.controller),
           AlchemyScreen(controller: widget.controller),
+          DaoScreen(controller: widget.controller),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -65,6 +67,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.science_outlined),
             selectedIcon: Icon(Icons.science),
             label: 'Alchemy',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_stories_outlined),
+            selectedIcon: Icon(Icons.auto_stories),
+            label: 'Dao',
           ),
         ],
       ),

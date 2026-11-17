@@ -7,6 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
+import 'package:immortal_path/game/engine/tribulation_engine.dart';
+import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/zone.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
@@ -102,13 +104,56 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  BreakthroughResult? attemptBreakthrough() {
-    if (!CultivationEngine.isBreakthroughReady(_state)) return null;
-    final result = CultivationEngine.attemptBreakthrough(_state);
+  BreakthroughAttempt attemptBreakthrough() {
+    if (!CultivationEngine.isBreakthroughReady(_state)) {
+      return const BreakthroughAttempt();
+    }
+    if (CultivationEngine.isMajorBreakthrough(_state)) {
+      _state = TribulationEngine.begin(_state);
+      notifyListeners();
+      save();
+      return const BreakthroughAttempt(tribulationStarted: true);
+    }
+    final result = CultivationEngine.attemptStageBreakthrough(_state);
     _state = result.state;
     notifyListeners();
     save();
-    return result;
+    return BreakthroughAttempt(result: result);
+  }
+
+  TribulationOutcome? faceTribulation(TribulationAction action) {
+    if (!_state.tribulationActive) return null;
+    final outcome = TribulationEngine.faceWave(_state, action, rng: _rng);
+    _state = outcome.state;
+    notifyListeners();
+    save();
+    return outcome;
+  }
+
+  void equipTechnique(String id) {
+    if (!_state.discoveredTechniques.contains(id)) return;
+    _state = _state.copyWith(techniqueId: id);
+    notifyListeners();
+    save();
+  }
+
+  bool feedCompanion() {
+    final companion = _state.companion;
+    if (companion == null || companion.level >= Companion.maxLevel) {
+      return false;
+    }
+    if (_state.beastCores < Companion.feedCost) return false;
+    _state = _state.copyWith(
+      beastCores: _state.beastCores - Companion.feedCost,
+      companion: Companion(
+        name: companion.name,
+        bonusType: companion.bonusType,
+        level: companion.level + 1,
+      ),
+    );
+    notifyListeners();
+    save();
+    return true;
   }
 
   void selectZone(int index) {

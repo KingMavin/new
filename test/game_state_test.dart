@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
@@ -110,6 +111,62 @@ void main() {
     test('lifespan includes pill bonus', () {
       final state = GameState.initial().copyWith(lifespanBonusYears: 50);
       expect(state.lifespanYears, 130);
+    });
+
+    test('json roundtrip preserves technique and companion', () {
+      final state = GameState.initial().copyWith(
+        techniqueId: 'flame',
+        discoveredTechniques: const ['basic', 'flame', 'thunder'],
+        companion: const Companion(
+          name: 'Ice Crow',
+          bonusType: 'qi',
+          level: 3,
+        ),
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.techniqueId, 'flame');
+      expect(parsed.discoveredTechniques, ['basic', 'flame', 'thunder']);
+      expect(parsed.companion?.name, 'Ice Crow');
+      expect(parsed.companion?.level, 3);
+      expect(parsed.companion?.qiBonus, closeTo(0.12, 1e-9));
+    });
+
+    test('json roundtrip preserves tribulation state', () {
+      final state = GameState.initial().copyWith(
+        tribulationActive: true,
+        tribulationWavesTotal: 5,
+        tribulationWavesCleared: 2,
+        tribulationHp: 300,
+        tribulationMaxHp: 500,
+        tribulationTargetRealm: 2,
+        tribulationDeflectBonus: 0.2,
+        tribulationLog: const ['Dark clouds gather.', 'Wave 1 survived.'],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.tribulationActive, isTrue);
+      expect(parsed.tribulationWavesTotal, 5);
+      expect(parsed.tribulationWavesCleared, 2);
+      expect(parsed.tribulationHp, 300);
+      expect(parsed.tribulationTargetRealm, 2);
+      expect(parsed.tribulationLog, ['Dark clouds gather.', 'Wave 1 survived.']);
+    });
+
+    test('version 2 saves load with phase 3 defaults', () {
+      final v2 = GameState.initial().toJson()
+        ..['version'] = 2
+        ..remove('techniqueId')
+        ..remove('discoveredTechniques')
+        ..remove('companion')
+        ..remove('tribulationActive')
+        ..remove('tribulationLog')
+        ..remove('tribulationsSurvived')
+        ..remove('tribulationsFailed');
+      final parsed = GameState.fromJson(v2);
+      expect(parsed.techniqueId, 'basic');
+      expect(parsed.discoveredTechniques, ['basic']);
+      expect(parsed.companion, isNull);
+      expect(parsed.tribulationActive, isFalse);
+      expect(parsed.tribulationsSurvived, 0);
     });
   });
 }

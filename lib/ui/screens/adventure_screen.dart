@@ -32,6 +32,10 @@ class _AdventureScreenState extends State<AdventureScreen> {
       if (loot.equipment != null && !outcome.equipped)
         'Sold ${loot.equipment!.name} for '
             '${formatNumber(outcome.soldFor)} spirit stones',
+      if (loot.technique != null)
+        'Discovered technique: ${loot.technique!.name}',
+      if (loot.tamedCompanion != null)
+        'Tamed companion: ${loot.tamedCompanion!.name}',
     ];
     showDialog<void>(
       context: context,

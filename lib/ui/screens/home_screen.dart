@@ -5,6 +5,7 @@ import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/tribulation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final GameController controller;
@@ -46,7 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _attemptBreakthrough() {
-    final result = widget.controller.attemptBreakthrough();
+    final attempt = widget.controller.attemptBreakthrough();
+    if (attempt.tribulationStarted) {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => TribulationDialog(controller: widget.controller),
+      );
+      return;
+    }
+    final result = attempt.result;
     if (result == null || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -64,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final state = widget.controller.state;
         final requirement = CultivationEngine.qiToNextStage(state);
         final ready = CultivationEngine.isBreakthroughReady(state);
+        final major = CultivationEngine.isMajorBreakthrough(state);
         final chance = CultivationEngine.effectiveBreakthroughChance(state);
         final progress = (state.qi / requirement).clamp(0.0, 1.0).toDouble();
         return Scaffold(
@@ -83,14 +94,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   progress: progress,
                 ),
                 const SizedBox(height: 16),
+                if (!state.ascended && state.tribulationActive)
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: ListTile(
+                      leading: const Icon(Icons.bolt),
+                      title: const Text('A tribulation rages!'),
+                      trailing: FilledButton(
+                        onPressed: () => showDialog<void>(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) =>
+                              TribulationDialog(controller: widget.controller),
+                        ),
+                        child: const Text('Face it'),
+                      ),
+                    ),
+                  ),
                 if (!state.ascended)
                   FilledButton.icon(
                     onPressed: ready ? _attemptBreakthrough : null,
                     icon: const Icon(Icons.bolt),
                     label: Text(
                       ready
-                          ? 'Attempt Breakthrough '
-                              '(${(chance * 100).toStringAsFixed(0)}% chance)'
+                          ? major
+                              ? 'Face Heavenly Tribulation'
+                              : 'Attempt Breakthrough '
+                                  '(${(chance * 100).toStringAsFixed(0)}% chance)'
                           : 'Attempt Breakthrough',
                     ),
                   ),
@@ -255,6 +285,16 @@ class _StatsCard extends StatelessWidget {
                 'Pill bonus',
                 '+${(state.breakthroughBonus * 100).toStringAsFixed(0)}%',
               ),
+            _statRow(
+              context,
+              'Tribulations survived',
+              '${state.tribulationsSurvived}',
+            ),
+            _statRow(
+              context,
+              'Tribulations failed',
+              '${state.tribulationsFailed}',
+            ),
           ],
         ),
       ),
