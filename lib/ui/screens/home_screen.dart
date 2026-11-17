@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final state = widget.controller.state;
         final requirement = CultivationEngine.qiToNextStage(state);
         final ready = CultivationEngine.isBreakthroughReady(state);
-        final chance = CultivationEngine.breakthroughChance(state);
+        final chance = CultivationEngine.effectiveBreakthroughChance(state);
         final progress = (state.qi / requirement).clamp(0.0, 1.0).toDouble();
         return Scaffold(
           appBar: AppBar(
@@ -236,6 +236,11 @@ class _StatsCard extends StatelessWidget {
             ),
             _statRow(
               context,
+              'Spirit stones',
+              formatNumber(state.spiritStones),
+            ),
+            _statRow(
+              context,
               'Breakthroughs succeeded',
               '${state.breakthroughsSucceeded}',
             ),
@@ -244,6 +249,12 @@ class _StatsCard extends StatelessWidget {
               'Breakthroughs failed',
               '${state.breakthroughsFailed}',
             ),
+            if (state.breakthroughBonus > 0)
+              _statRow(
+                context,
+                'Pill bonus',
+                '+${(state.breakthroughBonus * 100).toStringAsFixed(0)}%',
+              ),
           ],
         ),
       ),

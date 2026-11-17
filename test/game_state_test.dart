@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 
@@ -58,6 +59,57 @@ void main() {
       final minimal = GameState.initial().toJson()..remove('ascended');
       final parsed = GameState.fromJson(minimal);
       expect(parsed.ascended, isFalse);
+    });
+
+    test('json roundtrip preserves equipment', () {
+      final state = GameState.initial().copyWith(
+        weapon: const Equipment(
+          name: 'Spirit Blade',
+          slot: EquipmentSlot.weapon,
+          grade: 1,
+          power: 123.5,
+        ),
+        armor: const Equipment(
+          name: 'Earth Guard',
+          slot: EquipmentSlot.armor,
+          grade: 2,
+          power: 88,
+        ),
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.weapon?.name, 'Spirit Blade');
+      expect(parsed.weapon?.power, 123.5);
+      expect(parsed.armor?.gradeName, 'Earth');
+    });
+
+    test('version 1 saves without new fields load with defaults', () {
+      final v1 = GameState.initial().toJson()
+        ..['version'] = 1
+        ..remove('spiritStones')
+        ..remove('weapon')
+        ..remove('armor')
+        ..remove('breakthroughBonus')
+        ..remove('lifespanBonusYears')
+        ..remove('selectedZoneIndex')
+        ..remove('battlesWon')
+        ..remove('battlesLost')
+        ..remove('equipmentSold')
+        ..remove('spiritHerbs')
+        ..remove('beastCores')
+        ..remove('qiPills')
+        ..remove('breakthroughPills')
+        ..remove('lifespanPills');
+      final parsed = GameState.fromJson(v1);
+      expect(parsed.spiritStones, 0);
+      expect(parsed.weapon, isNull);
+      expect(parsed.armor, isNull);
+      expect(parsed.breakthroughBonus, 0);
+      expect(parsed.selectedZoneIndex, 0);
+    });
+
+    test('lifespan includes pill bonus', () {
+      final state = GameState.initial().copyWith(lifespanBonusYears: 50);
+      expect(state.lifespanYears, 130);
     });
   });
 }

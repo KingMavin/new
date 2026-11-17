@@ -103,6 +103,31 @@ void main() {
       expect(result.state.realmIndex, 8);
     });
 
+    test('pill bonus raises effective chance and is consumed on success', () {
+      final state = stateAt(realmIndex: 0, stageIndex: 3, qi: 1e6)
+          .copyWith(breakthroughBonus: 0.2);
+      expect(
+        CultivationEngine.effectiveBreakthroughChance(state),
+        closeTo(0.8, 1e-9),
+      );
+      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.85);
+      expect(result.success, isTrue);
+      expect(result.state.realmIndex, 1);
+      expect(result.state.breakthroughBonus, 0);
+    });
+
+    test('pill bonus is consumed on failure too', () {
+      final state = stateAt(qi: 100000).copyWith(breakthroughBonus: 0.2);
+      final result = CultivationEngine.attemptBreakthrough(state, roll: 0.999);
+      expect(result.success, isFalse);
+      expect(result.state.breakthroughBonus, 0);
+    });
+
+    test('effective chance is capped at 95 percent', () {
+      final state = stateAt(qi: 100000).copyWith(breakthroughBonus: 0.5);
+      expect(CultivationEngine.effectiveBreakthroughChance(state), 0.95);
+    });
+
     test('not ready returns unchanged state', () {
       final state = stateAt(qi: 10);
       final result = CultivationEngine.attemptBreakthrough(state, roll: 0.0);

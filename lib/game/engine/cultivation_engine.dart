@@ -49,6 +49,9 @@ class CultivationEngine {
   static double breakthroughChance(GameState state) =>
       isMajorBreakthrough(state) ? 0.60 : 0.90 - 0.10 * state.stageIndex;
 
+  static double effectiveBreakthroughChance(GameState state) =>
+      min(0.95, breakthroughChance(state) + state.breakthroughBonus);
+
   static BreakthroughResult attemptBreakthrough(GameState state, {double? roll}) {
     if (state.ascended || !isBreakthroughReady(state)) {
       return BreakthroughResult(
@@ -58,7 +61,8 @@ class CultivationEngine {
       );
     }
 
-    final success = (roll ?? Random().nextDouble()) < breakthroughChance(state);
+    final success =
+        (roll ?? Random().nextDouble()) < effectiveBreakthroughChance(state);
     final now = DateTime.now();
 
     if (!success) {
@@ -66,6 +70,7 @@ class CultivationEngine {
       final updated = state.copyWith(
         qi: state.qi - lost,
         breakthroughsFailed: state.breakthroughsFailed + 1,
+        breakthroughBonus: 0,
         lastSaved: now,
       );
       return BreakthroughResult(
@@ -82,6 +87,7 @@ class CultivationEngine {
         stageIndex: nextStage,
         qi: 0,
         breakthroughsSucceeded: state.breakthroughsSucceeded + 1,
+        breakthroughBonus: 0,
         lastSaved: now,
       );
       return BreakthroughResult(
@@ -100,6 +106,7 @@ class CultivationEngine {
         stageIndex: 0,
         qi: 0,
         breakthroughsSucceeded: state.breakthroughsSucceeded + 1,
+        breakthroughBonus: 0,
         lastSaved: now,
       );
       return BreakthroughResult(
@@ -115,6 +122,7 @@ class CultivationEngine {
       qi: 0,
       ascended: true,
       breakthroughsSucceeded: state.breakthroughsSucceeded + 1,
+      breakthroughBonus: 0,
       lastSaved: now,
     );
     return BreakthroughResult(

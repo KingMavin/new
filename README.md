@@ -2,7 +2,7 @@
 
 A single-player idle cultivation RPG inspired by xianxia mythology, built with Flutter.
 
-## Current MVP (Phase 1)
+## Phase 1 — Cultivation core
 
 - Qi accumulation over time (idle) plus an active "Circulate Qi" action
 - Nine-realm ladder (Qi Refining → Ascension) with Early/Middle/Late/Peak sub-stages
@@ -11,6 +11,15 @@ A single-player idle cultivation RPG inspired by xianxia mythology, built with F
 - Offline progress (capped at 24h) with a "While you were in seclusion" report
 - Autosave every 30s and on app pause, persisted via shared_preferences
 - Lifespan display per realm and an ascension ending
+
+## Phase 2 — Combat & alchemy
+
+- Nine adventure zones gated by cultivation realm, each with themed beasts
+- Auto-battle simulation with round-by-round combat log (seeded, deterministic in tests)
+- Loot: spirit stones, spirit herbs, beast cores, and equipment drops
+- Five equipment grades (Mortal → Immortal) for weapon and armor slots; stronger drops auto-equip, weaker ones sell for spirit stones
+- Alchemy: brew Qi Gathering, Foundation (+breakthrough chance), and Longevity pills from herbs, cores, and stones
+- Three-tab interface: Cultivate, Adventure, Alchemy
 
 ## Getting started
 
@@ -48,7 +57,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Phase 2 — combat zones, loot tiers, alchemy/pills, away reports for events
-2. Phase 3 — sect, disciples, spirit beast companion, tribulation mini-events
-3. Phase 4 — reincarnation/prestige, random encounter events, codex
-4. Phase 5 — Flame animations, audio, local notifications, balance pass
+1. Phase 3 — sect, disciples, spirit beast companion, tribulation mini-events
+2. Phase 4 — reincarnation/prestige, random encounter events, codex
+3. Phase 5 — Flame animations, audio, local notifications, balance pass
