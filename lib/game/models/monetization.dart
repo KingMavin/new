@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'equipment.dart';
+
 class ActiveBoost {
   final String id;
   final String kind;
@@ -66,6 +70,14 @@ class StoreProduct {
     required this.priceLabel,
     this.themeSeed,
   });
+
+  static const Set<String> kinds = {
+    'support',
+    'theme',
+    'offline',
+    'gear',
+    'bundle',
+  };
 }
 
 class MonetizationCatalog {
@@ -111,6 +123,63 @@ class MonetizationCatalog {
 
   static const List<StoreProduct> products = [
     StoreProduct(
+      id: 'immortal_pack',
+      title: 'The Immortal Pack',
+      description:
+          'The full inheritance: Patron seal, every theme (Celestial Gold '
+          'included), 24 hours of offline stillness, and the complete '
+          'Ancestral Heirloom set \u2014 weapon, armor, and seal.',
+      kind: 'bundle',
+      priceLabel: '\$24.99',
+      themeSeed: '0xFFFFD54F',
+    ),
+    StoreProduct(
+      id: 'offline_12h',
+      title: 'Hours of Stillness II',
+      description:
+          'Your cultivation keeps flowing while you sleep \u2014 offline '
+          'progress caps rise from 8 to 12 hours. Forever.',
+      kind: 'offline',
+      priceLabel: '\$2.99',
+    ),
+    StoreProduct(
+      id: 'offline_24h',
+      title: 'Hours of Stillness III',
+      description:
+          'Offline progress caps rise to 24 hours. Forever '
+          '(includes the 12-hour band).',
+      kind: 'offline',
+      priceLabel: '\$4.99',
+    ),
+    StoreProduct(
+      id: 'heirloom_weapon',
+      title: 'Heirloom: Ancestral Fang',
+      description:
+          'A blade passed down your bloodline, forged for the strength you '
+          'carry right now. Later realms outgrow it \u2014 heirlooms never '
+          'outgrow the climb.',
+      kind: 'gear',
+      priceLabel: '\$3.99',
+    ),
+    StoreProduct(
+      id: 'heirloom_armor',
+      title: 'Heirloom: Ancestral Mantle',
+      description:
+          'Woven wards of your lineage, fitted to the moment you receive '
+          'them.',
+      kind: 'gear',
+      priceLabel: '\$3.99',
+    ),
+    StoreProduct(
+      id: 'heirloom_amulet',
+      title: 'Heirloom: Ancestral Seal',
+      description:
+          'A seal of the first ancestor of your line \u2014 it lends its '
+          'strength to both blade and ward.',
+      kind: 'gear',
+      priceLabel: '\$3.99',
+    ),
+    StoreProduct(
       id: 'immortal_patron',
       title: 'Immortal Patron',
       description:
@@ -146,6 +215,66 @@ class MonetizationCatalog {
       themeSeed: '0xFF7E57C2',
     ),
   ];
+
+  static const Duration baseOfflineCap = Duration(hours: 8);
+
+  static Duration offlineCapFor(List<String> ownedStoreItems) {
+    if (ownedStoreItems.contains('offline_24h') ||
+        ownedStoreItems.contains('immortal_pack')) {
+      return const Duration(hours: 24);
+    }
+    if (ownedStoreItems.contains('offline_12h')) {
+      return const Duration(hours: 12);
+    }
+    return baseOfflineCap;
+  }
+
+  static const double heirloomPowerBase = 55.0;
+
+  static double heirloomPower(int realmIndex) =>
+      heirloomPowerBase * pow(1.8, realmIndex);
+
+  static const List<String> heirloomProductIds = [
+    'heirloom_weapon',
+    'heirloom_armor',
+    'heirloom_amulet',
+  ];
+
+  static const List<String> themeProductIds = [
+    'theme_celestial_gold',
+    'theme_ember',
+    'theme_ashen',
+    'theme_moonveil',
+  ];
+
+  static Equipment? mintedGearFor(String productId, int realmIndex) {
+    final power = heirloomPower(realmIndex);
+    switch (productId) {
+      case 'heirloom_weapon':
+        return Equipment(
+          name: 'Ancestral Fang',
+          slot: EquipmentSlot.weapon,
+          grade: 4,
+          power: power,
+        );
+      case 'heirloom_armor':
+        return Equipment(
+          name: 'Ancestral Mantle',
+          slot: EquipmentSlot.armor,
+          grade: 4,
+          power: power,
+        );
+      case 'heirloom_amulet':
+        return Equipment(
+          name: 'Ancestral Seal',
+          slot: EquipmentSlot.amulet,
+          grade: 4,
+          power: power,
+        );
+      default:
+        return null;
+    }
+  }
 
   static AdPlacement? placementById(String id) {
     for (final placement in adPlacements) {

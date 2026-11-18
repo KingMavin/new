@@ -24,6 +24,7 @@ class GameState {
   final int lifespanPills;
   final Equipment? weapon;
   final Equipment? armor;
+  final Equipment? amulet;
   final double breakthroughBonus;
   final int lifespanBonusYears;
   final int selectedZoneIndex;
@@ -93,6 +94,7 @@ class GameState {
     required this.lifespanPills,
     required this.weapon,
     required this.armor,
+    this.amulet,
     required this.breakthroughBonus,
     required this.lifespanBonusYears,
     required this.selectedZoneIndex,
@@ -163,6 +165,7 @@ class GameState {
         lifespanPills: 0,
         weapon: null,
         armor: null,
+        amulet: null,
         breakthroughBonus: 0,
         lifespanBonusYears: 0,
         selectedZoneIndex: 0,
@@ -212,6 +215,7 @@ class GameState {
     int? lifespanPills,
     Equipment? weapon,
     Equipment? armor,
+    Equipment? amulet,
     double? breakthroughBonus,
     int? lifespanBonusYears,
     int? selectedZoneIndex,
@@ -282,6 +286,7 @@ class GameState {
       lifespanPills: lifespanPills ?? this.lifespanPills,
       weapon: weapon ?? this.weapon,
       armor: armor ?? this.armor,
+      amulet: amulet ?? this.amulet,
       breakthroughBonus: breakthroughBonus ?? this.breakthroughBonus,
       lifespanBonusYears: lifespanBonusYears ?? this.lifespanBonusYears,
       selectedZoneIndex: selectedZoneIndex ?? this.selectedZoneIndex,
@@ -352,7 +357,7 @@ class GameState {
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 10,
+        'version': 11,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -370,6 +375,7 @@ class GameState {
         'lifespanPills': lifespanPills,
         'weapon': weapon?.toJson(),
         'armor': armor?.toJson(),
+        'amulet': amulet?.toJson(),
         'breakthroughBonus': breakthroughBonus,
         'lifespanBonusYears': lifespanBonusYears,
         'selectedZoneIndex': selectedZoneIndex,
@@ -444,6 +450,9 @@ class GameState {
         armor: json['armor'] == null
             ? null
             : Equipment.fromJson(json['armor'] as Map<String, dynamic>),
+        amulet: json['amulet'] == null
+            ? null
+            : Equipment.fromJson(json['amulet'] as Map<String, dynamic>),
         breakthroughBonus: (json['breakthroughBonus'] as num?)?.toDouble() ?? 0,
         lifespanBonusYears: json['lifespanBonusYears'] as int? ?? 0,
         selectedZoneIndex: json['selectedZoneIndex'] as int? ?? 0,

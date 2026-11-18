@@ -76,7 +76,8 @@ class CombatEngine {
             RaceEngine.attackMultiplier(state) *
             (1.0 + StoryEngine.attackBonus(state)) *
             (1.0 + PowerEngine.attackBonus(state)) +
-        (state.weapon?.power ?? 0);
+        (state.weapon?.power ?? 0) +
+        (state.amulet?.power ?? 0) * 0.5;
   }
 
   static double playerDefense(GameState state) {
@@ -88,7 +89,8 @@ class CombatEngine {
             (1.0 + SoulEngine.defenseBonus(state)) *
             RaceEngine.defenseMultiplier(state) *
             (1.0 + PowerEngine.defenseBonus(state)) +
-        (state.armor?.power ?? 0);
+        (state.armor?.power ?? 0) +
+        (state.amulet?.power ?? 0) * 0.5;
   }
 
   static double playerMaxHp(GameState state) {

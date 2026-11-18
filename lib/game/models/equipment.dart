@@ -1,4 +1,4 @@
-enum EquipmentSlot { weapon, armor }
+enum EquipmentSlot { weapon, armor, amulet }
 
 class Equipment {
   final String name;
@@ -37,12 +37,40 @@ class Equipment {
     'Immortal Carapace',
   ];
 
+  static const List<String> amuletNames = [
+    'Bone Charm',
+    'Spirit Talisman',
+    'Earth Sigil',
+    'Heaven Medallion',
+    'Immortal Seal',
+  ];
+
   String get gradeName => gradeNames[grade];
 
-  String get slotLabel => slot == EquipmentSlot.weapon ? 'Weapon' : 'Armor';
+  String get slotLabel {
+    switch (slot) {
+      case EquipmentSlot.weapon:
+        return 'Weapon';
+      case EquipmentSlot.armor:
+        return 'Armor';
+      case EquipmentSlot.amulet:
+        return 'Amulet';
+    }
+  }
 
   factory Equipment.create(EquipmentSlot slot, int grade, double power) {
-    final names = slot == EquipmentSlot.weapon ? weaponNames : armorNames;
+    final List<String> names;
+    switch (slot) {
+      case EquipmentSlot.weapon:
+        names = weaponNames;
+        break;
+      case EquipmentSlot.armor:
+        names = armorNames;
+        break;
+      case EquipmentSlot.amulet:
+        names = amuletNames;
+        break;
+    }
     return Equipment(
       name: names[grade],
       slot: slot,

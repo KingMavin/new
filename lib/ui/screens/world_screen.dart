@@ -469,12 +469,14 @@ class _CombatStatsCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              state.weapon == null && state.armor == null
+              state.weapon == null && state.armor == null && state.amulet == null
                   ? 'No equipment \u2014 defeat beasts to find weapons and armor.'
                   : '${state.weapon?.name ?? "No weapon"} '
                       '(${state.weapon?.gradeName ?? "-"}) \u00b7 '
                       '${state.armor?.name ?? "No armor"} '
-                      '(${state.armor?.gradeName ?? "-"})',
+                      '(${state.armor?.gradeName ?? "-"}) \u00b7 '
+                      '${state.amulet?.name ?? "No amulet"} '
+                      '(${state.amulet?.gradeName ?? "-"})',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

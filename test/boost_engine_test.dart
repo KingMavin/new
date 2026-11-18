@@ -27,9 +27,13 @@ void main() {
       }
     });
 
-    test('store sells only support identity, never stat power', () {
+    test('store sells only known product kinds', () {
       for (final product in MonetizationCatalog.products) {
-        expect(product.kind, anyOf('support', 'theme'));
+        expect(
+          StoreProduct.kinds.contains(product.kind),
+          isTrue,
+          reason: '${product.id} has unknown kind ${product.kind}',
+        );
       }
     });
   });

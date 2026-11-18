@@ -77,6 +77,7 @@ class SoulEngine {
       lifespanPills: 0,
       weapon: null,
       armor: null,
+      amulet: null,
       breakthroughBonus: 0,
       lifespanBonusYears: 0,
       selectedZoneIndex: 0,

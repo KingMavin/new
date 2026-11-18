@@ -384,6 +384,27 @@ void main() {
       expect(parsed.lastAdWatch['qi_incense'], DateTime(2025, 1, 1, 12).toIso8601String());
     });
 
+    test('version 10 saves load with phase 12 defaults', () {
+      final v10 = GameState.initial().toJson()
+        ..['version'] = 10
+        ..remove('amulet');
+      final parsed = GameState.fromJson(v10);
+      expect(parsed.amulet, isNull);
+      expect(parsed.weapon, isNull);
+      expect(parsed.armor, isNull);
+    });
+
+    test('json roundtrip preserves amulet', () {
+      final state = GameState.initial().copyWith(
+        amulet: Equipment.create(EquipmentSlot.amulet, 2, 123.4),
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.amulet, isNotNull);
+      expect(parsed.amulet!.name, 'Earth Sigil');
+      expect(parsed.amulet!.slot, EquipmentSlot.amulet);
+      expect(parsed.amulet!.power, 123.4);
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

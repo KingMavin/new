@@ -66,18 +66,87 @@ class _StoreScreenState extends State<StoreScreen> {
                 ),
               const SizedBox(height: 16),
               Text(
+                'The Immortal Pack',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'One offering for the whole inheritance: patron, every '
+                'theme, a 24-hour offline cap, and the full Ancestral '
+                'Heirloom set.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              for (final product in MonetizationCatalog.products)
+                if (product.kind == 'bundle')
+                  ProductCard(
+                    state: state,
+                    product: product,
+                    busy: _busyId == product.id,
+                    onPurchase: () => _purchase(product),
+                    onSelectTheme: () =>
+                        widget.controller.chooseTheme(product.id),
+                  ),
+              const SizedBox(height: 16),
+              Text(
+                'Heirloom Armory',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Bloodline gear fitted to the strength you hold right now. '
+                'Realms advance \u2014 heirlooms are the boost of the moment, '
+                'never the end of the road.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              for (final product in MonetizationCatalog.products)
+                if (product.kind == 'gear')
+                  ProductCard(
+                    state: state,
+                    product: product,
+                    busy: _busyId == product.id,
+                    onPurchase: () => _purchase(product),
+                    onSelectTheme: () =>
+                        widget.controller.chooseTheme(product.id),
+                  ),
+              const SizedBox(height: 16),
+              Text(
+                'Hours of Stillness',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Your qi gathers even while you rest \u2014 these scrolls '
+                'lengthen how long the temple keeps counting. Free cultivators '
+                'begin at 8 hours.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              for (final product in MonetizationCatalog.products)
+                if (product.kind == 'offline')
+                  ProductCard(
+                    state: state,
+                    product: product,
+                    busy: _busyId == product.id,
+                    onPurchase: () => _purchase(product),
+                    onSelectTheme: () =>
+                        widget.controller.chooseTheme(product.id),
+                  ),
+              const SizedBox(height: 16),
+              Text(
                 'Support & Scrolls',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 4),
               Text(
-                'Coin buys identity and comfort, never power. The ladder, '
-                'loot and tribulations stay honest for everyone.',
+                'Patron seal and theme scrolls for the temple at large.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
               for (final product in MonetizationCatalog.products)
-                _ProductCard(
+                if (product.kind == 'theme' || product.kind == 'support')
+                  ProductCard(
                   state: state,
                   product: product,
                   busy: _busyId == product.id,
@@ -209,14 +278,14 @@ class _PlacementCard extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class ProductCard extends StatelessWidget {
   final GameState state;
   final StoreProduct product;
   final bool busy;
   final VoidCallback onPurchase;
   final VoidCallback onSelectTheme;
 
-  const _ProductCard({
+  const ProductCard({
     required this.state,
     required this.product,
     required this.busy,
@@ -235,7 +304,13 @@ class _ProductCard extends StatelessWidget {
         leading: Icon(
           product.kind == 'support'
               ? Icons.workspace_premium
-              : Icons.palette,
+              : product.kind == 'theme'
+                  ? Icons.palette
+                  : product.kind == 'offline'
+                      ? Icons.hourglass_top
+                      : product.kind == 'gear'
+                          ? Icons.auto_fix_high
+                          : Icons.card_giftcard,
           color:
               owned && selected ? Theme.of(context).colorScheme.primary : null,
         ),
@@ -259,7 +334,9 @@ class _ProductCard extends StatelessWidget {
                         onPressed: selected ? null : onSelectTheme,
                         child: Text(selected ? 'Worn' : 'Wear'),
                       )
-                    : const Chip(label: Text('Patron')))
+                    : product.kind == 'support'
+                        ? const Chip(label: Text('Patron'))
+                        : const Chip(label: Text('Owned')))
                 : FilledButton(
                     onPressed: onPurchase,
                     child: Text(product.priceLabel),

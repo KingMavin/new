@@ -92,6 +92,15 @@ The game talks to the store only through the gateway, so the swap is one class:
 
 Everything else (cooldowns, boost expiry, persistence, the store UI) already works and is covered by `test/boost_engine_test.dart`, which also pins the anti-pay-to-win guarantees: ad multipliers cap at 2.0 with 8h max duration, cooldowns are always non-zero, and the store only ever sells `support` and `theme` kinds.
 
+## Phase 12 — Stores: offline stillness, heirlooms & the sect armory
+
+- Offline progress becomes a shop reward: free cultivators bank up to 8 hours; Hours of Stillness II ($2.99) raises the cap to 12; Hours of Stillness III ($4.99) to 24; The Immortal Pack already includes the full 24
+- Amulets join weapons and armor as a third equipment slot (an amulet lends half its power to attack and half to defense); they come from stores, not beast drops
+- The Temple of Support grows: The Immortal Pack ($24.99, one payment for patron + every theme + 24h offline + the full Ancestral Heirloom set), the Heirloom Armory (Ancestral Fang / Mantle / Seal, $3.99 each), and the Hours of Stillness scrolls
+- The Sect Armory opens from the sect screen — a second store deliberately separate from the Temple: sect-forged weapons, armor, and talismans bought with spirit stones (costs scale 1.8x per realm alongside item power), gated by sect rank, plus an Offerings section that lists the same real-coin heirlooms and offline hours
+- Paid gear cannot break the ladder: heirlooms mint at Immortal-grade power for the realm you buy at, store gear auto-equips only when strictly better than what you carry, drops in later realms always outgrow them, and the sect sells nearly-as-good gear for earned stones
+- GameState v11: the amulet slot persists in saves; version 10 saves load with a null amulet, and all store grants survive reincarnation
+
 ## Phase 9 — Powers, sect arts & changing blood
 
 - Special powers hidden in the wilds: six legendary powers (Ember of the Fallen Phoenix, Dragon-Scale Heart, Thunder Marrow, Void Insight, Moonveil Blessing, The Sage's Last Word) that can surface after any battle — far more often in raids, fallen cities, and faction halls
@@ -158,4 +167,5 @@ progress consistent and unit-testable.
 
 1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
 2. Local notifications, audio, optional background art packs
-3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the no-power rule intact
+3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the shop honest
+4. Expand the stores: seasonal heirloom sets, sect-liveried gear skins, offline cap bundles as gifts

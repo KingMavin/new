@@ -10,6 +10,7 @@ import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/sect_store_screen.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
 
@@ -140,6 +141,25 @@ class SectScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _MissionLogCard(state: state),
+                  const SizedBox(height: 8),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.storefront),
+                      title: const Text('Sect Armory'),
+                      subtitle: const Text(
+                        'Sect-forged gear for spirit stones, and ancestral '
+                        'offerings for coin.',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SectStoreScreen(
+                            controller: controller,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => _confirmLeave(context),

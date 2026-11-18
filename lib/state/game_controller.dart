@@ -21,6 +21,8 @@ import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
+import 'package:immortal_path/game/engine/store_engine.dart';
+import 'package:immortal_path/game/models/sect_store.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/monetization.dart';
@@ -44,7 +46,8 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   static const Duration _tickInterval = Duration(milliseconds: 250);
   static const Duration _autosaveInterval = Duration(seconds: 30);
   static const Duration _offlineReportThreshold = Duration(seconds: 30);
-  static const Duration maxOfflineDuration = Duration(hours: 24);
+  Duration get maxOfflineDuration =>
+      MonetizationCatalog.offlineCapFor(_state.ownedCosmetics);
   static const double maxBreakthroughBonus = 0.5;
 
   final SaveRepository _repository;
@@ -725,24 +728,69 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   Future<bool> purchaseProduct(String productId) async {
     final product = MonetizationCatalog.productById(productId);
     if (product == null) return false;
-    if (product.id == 'immortal_patron' && _state.supportTier) return false;
+    if (!StoreProduct.kinds.contains(product.kind)) return false;
     if (_state.ownedCosmetics.contains(productId)) return false;
     final bought = await _gateway.purchase(productId);
     if (!bought) return false;
-    if (product.kind == 'support') {
-      _state = _state.copyWith(
-        supportTier: true,
-        ownedCosmetics: [
-          ..._state.ownedCosmetics,
+    var updated = _state;
+    switch (product.kind) {
+      case 'support':
+        updated = updated.copyWith(supportTier: true);
+      case 'theme':
+      case 'offline':
+        break;
+      case 'gear':
+        final minted = MonetizationCatalog.mintedGearFor(
           productId,
-          'theme_celestial_gold',
-        ],
-      );
-    } else {
-      _state = _state.copyWith(
-        ownedCosmetics: [..._state.ownedCosmetics, productId],
-      );
+          updated.realmIndex,
+        );
+        if (minted != null) {
+          updated = StoreEngine.equipIfBetter(updated, minted);
+        }
+      case 'bundle':
+        updated = updated.copyWith(supportTier: true);
+        for (final heirloomId in MonetizationCatalog.heirloomProductIds) {
+          final minted =
+              MonetizationCatalog.mintedGearFor(heirloomId, updated.realmIndex);
+          if (minted != null) {
+            updated = StoreEngine.equipIfBetter(updated, minted);
+          }
+        }
     }
+    final granted = <String>[productId];
+    if (product.kind == 'support') granted.add('theme_celestial_gold');
+    if (product.kind == 'bundle') granted.addAll(
+      [
+        ...MonetizationCatalog.themeProductIds,
+        ...MonetizationCatalog.heirloomProductIds,
+      ],
+    );
+    updated = updated.copyWith(
+      ownedCosmetics: [...updated.ownedCosmetics, ...granted],
+    );
+    _state = updated;
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  String? sectItemBlocker(String itemId) {
+    final item = SectStoreCatalog.itemById(itemId);
+    if (item == null) return 'The storeroom does not carry that.';
+    return SectStoreEngine.buyBlocker(_state, item);
+  }
+
+  double sectItemCost(String itemId) {
+    final item = SectStoreCatalog.itemById(itemId);
+    if (item == null) return 0;
+    return item.stoneCostFor(_state.realmIndex).toDouble();
+  }
+
+  bool buySectItem(String itemId) {
+    final item = SectStoreCatalog.itemById(itemId);
+    if (item == null) return false;
+    if (SectStoreEngine.buyBlocker(_state, item) != null) return false;
+    _state = SectStoreEngine.buy(_state, item);
     notifyListeners();
     save();
     return true;
