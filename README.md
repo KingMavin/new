@@ -74,6 +74,24 @@ backdrops (gradient art per location) rather than animations.
 - Combat fundamentals unchanged (2x per realm) so the fight-by-fight difficulty bands above stay valid
 - Settings screen (gear icon on every tab): export your save as text (copy to clipboard), import a save by pasting it back, and an erase-and-restart danger zone
 
+## Phase 11 — Temple of Support: opt-in ads & purchases
+
+- The Temple of Support (entry card on the settings screen) keeps monetization honest with one rule: **ads are optional timed boons, purchases are identity and comfort — nothing ever sells stats**
+- Three opt-in ad blessings: Incense of the Ancestors (2x qi for 8h), Fortune Teller's Favor (+50% spirit stones for 4h), and The Duel Pigeon (clears tournament and war cooldowns); each has its own cooldown and every one is replaceable by play — boosts multiply qi/stone rates only, and the whole ladder remains winnable without ever touching them
+- Four store products: Immortal Patron (support tier with the Celestial Gold theme and a Patron mark on your legend) plus three cosmetic themes — Phoenix Ember, Ashen Clans, Moonveil Glade — which re-tint the entire Material 3 app instantly
+- All purchases and ad rewards persist through reincarnation, survive save export/import, and load from version 9 saves with clean defaults (GameState v10)
+- Real AdMob and billing are not wired in this build; the whole layer sits behind a `MonetizationGateway` abstraction (lib/monetization/monetization_gateway.dart) with a `StubMonetizationGateway` that simulates a successful watch/purchase after a short delay, so any real gateway can be dropped in without touching game logic
+
+### Wiring in real ads and billing
+
+The game talks to the store only through the gateway, so the swap is one class:
+
+1. Add `google_mobile_ads` and `in_app_purchase` to `pubspec.yaml` (store accounts and test unit IDs are set up in the AdMob and Play/App Store consoles — this cannot be done from a dev sandbox, and price labels like `\$4.99` in `MonetizationCatalog` are placeholders meant to be replaced by real store-dynamic prices).
+2. Write a `RealMonetizationGateway implements MonetizationGateway`: `showRewardedAd` loads and presents a rewarded ad for the placement id (reward on `RewardedAdEvent.earnedReward`), `purchase` runs the `in_app_purchase` flow (restore purchases on startup for non-consumables like themes and patron), and `isConfigured` returns true once AdMob unit IDs are present.
+3. Pass the gateway in: `GameController(gateway: RealMonetizationGateway())`.
+
+Everything else (cooldowns, boost expiry, persistence, the store UI) already works and is covered by `test/boost_engine_test.dart`, which also pins the anti-pay-to-win guarantees: ad multipliers cap at 2.0 with 8h max duration, cooldowns are always non-zero, and the store only ever sells `support` and `theme` kinds.
+
 ## Phase 9 — Powers, sect arts & changing blood
 
 - Special powers hidden in the wilds: six legendary powers (Ember of the Fallen Phoenix, Dragon-Scale Heart, Thunder Marrow, Void Insight, Moonveil Blessing, The Sage's Last Word) that can surface after any battle — far more often in raids, fallen cities, and faction halls
@@ -127,6 +145,7 @@ lib/
     engine/       Pure simulation logic: qi rates, breakthroughs, offline calc
     persistence/  SaveRepository interface + shared_preferences implementation
     util/         Number and duration formatting
+  monetization/   MonetizationGateway abstraction + AdMob/billing stub
   state/          GameController (ChangeNotifier): tick loop, autosave, lifecycle
   ui/             Material 3 interface
 ```
@@ -139,4 +158,4 @@ progress consistent and unit-testable.
 
 1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
 2. Local notifications, audio, optional background art packs
-3. Monetization scaffolding: opt-in rewarded ads and support/cosmetic purchases — never stat power
+3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the no-power rule intact

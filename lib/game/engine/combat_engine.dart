@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/boost_engine.dart';
 import 'package:immortal_path/game/engine/power_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
@@ -124,7 +125,8 @@ class CombatEngine {
         RaceEngine.stoneMultiplier(state) *
         (1.0 + ReputationEngine.standingBonus(state)) *
         (1.0 + StoryEngine.stoneBonus(state)) *
-        (1.0 + PowerEngine.stoneBonus(state));
+        (1.0 + PowerEngine.stoneBonus(state)) *
+        BoostEngine.multiplierFor(state, 'stones');
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;

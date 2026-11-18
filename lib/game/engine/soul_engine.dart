@@ -114,6 +114,11 @@ class SoulEngine {
       legendSeen: state.legendSeen,
       achievedEndings: state.achievedEndings,
       discoveredPowers: state.discoveredPowers,
+      boosts: state.boosts,
+      supportTier: state.supportTier,
+      ownedCosmetics: state.ownedCosmetics,
+      activeThemeId: state.activeThemeId,
+      lastAdWatch: state.lastAdWatch,
     );
   }
 }

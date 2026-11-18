@@ -4,6 +4,7 @@ import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/disciple.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 
 void main() {
@@ -339,6 +340,48 @@ void main() {
       );
       final kept = state.copyWith(qi: 100);
       expect(kept.discoveredPowers, ['void_insight']);
+    });
+
+    test('version 9 saves load with phase 11 defaults', () {
+      final v9 = GameState.initial().toJson()
+        ..['version'] = 9
+        ..remove('boosts')
+        ..remove('supportTier')
+        ..remove('ownedCosmetics')
+        ..remove('activeThemeId')
+        ..remove('lastAdWatch');
+      final parsed = GameState.fromJson(v9);
+      expect(parsed.boosts, isEmpty);
+      expect(parsed.supportTier, isFalse);
+      expect(parsed.ownedCosmetics, isEmpty);
+      expect(parsed.activeThemeId, isNull);
+      expect(parsed.lastAdWatch, isEmpty);
+    });
+
+    test('json roundtrip preserves monetization', () {
+      final state = GameState.initial().copyWith(
+        boosts: [
+          ActiveBoost(
+            id: 'qi_incense',
+            kind: 'qi',
+            multiplier: 2.0,
+            expiresAt: DateTime(2025, 1, 1, 20),
+          ),
+        ],
+        supportTier: true,
+        ownedCosmetics: const ['theme_ember', 'immortal_patron'],
+        activeThemeId: 'theme_ember',
+        lastAdWatch: {'qi_incense': DateTime(2025, 1, 1, 12).toIso8601String()},
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.boosts.length, 1);
+      expect(parsed.boosts.single.id, 'qi_incense');
+      expect(parsed.boosts.single.multiplier, 2.0);
+      expect(parsed.boosts.single.expiresAt, DateTime(2025, 1, 1, 20));
+      expect(parsed.supportTier, isTrue);
+      expect(parsed.ownedCosmetics, ['theme_ember', 'immortal_patron']);
+      expect(parsed.activeThemeId, 'theme_ember');
+      expect(parsed.lastAdWatch['qi_incense'], DateTime(2025, 1, 1, 12).toIso8601String());
     });
 
     test('version 3 saves load with phase 4 defaults', () {

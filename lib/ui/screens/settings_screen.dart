@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/store_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final GameController controller;
@@ -55,6 +56,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: _importSave,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Temple of Support',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.workspace_premium),
+              title: const Text('Blessings & Patron themes'),
+              subtitle: const Text(
+                'Opt-in ads that grant timed boons, and cosmetic themes '
+                'that never touch the ladder.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => StoreScreen(controller: widget.controller),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),

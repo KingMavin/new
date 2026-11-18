@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
+import 'package:immortal_path/game/engine/boost_engine.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
@@ -22,6 +23,7 @@ import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
+import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/power.dart';
 import 'package:immortal_path/game/models/race.dart';
@@ -29,11 +31,13 @@ import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/persistence/shared_prefs_save_repository.dart';
+import 'package:immortal_path/monetization/monetization_gateway.dart';
 import 'package:immortal_path/game/util/format.dart';
 
 class GameController extends ChangeNotifier with WidgetsBindingObserver {
-  GameController({SaveRepository? repository})
-      : _repository = repository ?? SharedPrefsSaveRepository() {
+  GameController({SaveRepository? repository, MonetizationGateway? gateway})
+      : _repository = repository ?? SharedPrefsSaveRepository(),
+        _gateway = gateway ?? StubMonetizationGateway() {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -44,6 +48,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   static const double maxBreakthroughBonus = 0.5;
 
   final SaveRepository _repository;
+  final MonetizationGateway _gateway;
   final Random _rng = Random();
   Timer? _timer;
   DateTime _lastTick = DateTime.now();
@@ -691,6 +696,66 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
 
   void resetGame() {
     _state = GameState.initial();
+    notifyListeners();
+    save();
+  }
+
+  bool get monetizationConfigured => _gateway.isConfigured;
+
+  Duration adCooldownRemaining(String placementId) {
+    final placement = MonetizationCatalog.placementById(placementId);
+    if (placement == null) return Duration.zero;
+    return BoostEngine.remainingCooldown(_state, placement);
+  }
+
+  Future<bool> watchAdFor(String placementId) async {
+    final placement = MonetizationCatalog.placementById(placementId);
+    if (placement == null) return false;
+    if (BoostEngine.remainingCooldown(_state, placement) > Duration.zero) {
+      return false;
+    }
+    final watched = await _gateway.showRewardedAd(placementId);
+    if (!watched) return false;
+    _state = BoostEngine.grantPlacement(_state, placement);
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  Future<bool> purchaseProduct(String productId) async {
+    final product = MonetizationCatalog.productById(productId);
+    if (product == null) return false;
+    if (product.id == 'immortal_patron' && _state.supportTier) return false;
+    if (_state.ownedCosmetics.contains(productId)) return false;
+    final bought = await _gateway.purchase(productId);
+    if (!bought) return false;
+    if (product.kind == 'support') {
+      _state = _state.copyWith(
+        supportTier: true,
+        ownedCosmetics: [
+          ..._state.ownedCosmetics,
+          productId,
+          'theme_celestial_gold',
+        ],
+      );
+    } else {
+      _state = _state.copyWith(
+        ownedCosmetics: [..._state.ownedCosmetics, productId],
+      );
+    }
+    notifyListeners();
+    save();
+    return true;
+  }
+
+  bool ownsTheme(String? themeId) {
+    if (themeId == null) return true;
+    return _state.ownedCosmetics.contains(themeId);
+  }
+
+  void chooseTheme(String? themeId) {
+    if (!ownsTheme(themeId)) return;
+    _state = _state.copyWith(activeThemeId: themeId);
     notifyListeners();
     save();
   }

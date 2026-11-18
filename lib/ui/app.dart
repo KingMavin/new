@@ -12,16 +12,30 @@ class ImmortalPathApp extends StatelessWidget {
 
   const ImmortalPathApp({super.key, required this.controller});
 
+  static const Map<String, Color> themeSeeds = {
+    'theme_ember': Color(0xFFFF7043),
+    'theme_ashen': Color(0xFFB71C1C),
+    'theme_moonveil': Color(0xFF7E57C2),
+    'theme_celestial_gold': Color(0xFFFFC107),
+  };
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Immortal Path',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: MainShell(controller: controller),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final themeId = controller.state.activeThemeId;
+        final seed = themeSeeds[themeId] ?? Colors.deepPurple;
+        return MaterialApp(
+          title: 'Immortal Path',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: seed),
+          ),
+          home: MainShell(controller: controller),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'companion.dart';
 import 'disciple.dart';
 import 'equipment.dart';
+import 'monetization.dart';
 import 'realm_ladder.dart';
 
 class GameState {
@@ -68,6 +69,11 @@ class GameState {
   final List<String> achievedEndings;
   final String? pendingEndingId;
   final List<String> discoveredPowers;
+  final List<ActiveBoost> boosts;
+  final bool supportTier;
+  final List<String> ownedCosmetics;
+  final String? activeThemeId;
+  final Map<String, String> lastAdWatch;
 
   const GameState({
     required this.realmIndex,
@@ -132,6 +138,11 @@ class GameState {
     this.achievedEndings = const [],
     this.pendingEndingId,
     this.discoveredPowers = const [],
+    this.boosts = const [],
+    this.supportTier = false,
+    this.ownedCosmetics = const [],
+    this.activeThemeId,
+    this.lastAdWatch = const {},
   });
 
   factory GameState.initial() => GameState(
@@ -234,8 +245,8 @@ class GameState {
     Object? raceId = _unset,
     int? tournamentsWon,
     int? warsWon,
-    DateTime? lastTournamentAt,
-    DateTime? lastWarAt,
+    Object? lastTournamentAt = _unset,
+    Object? lastWarAt = _unset,
     Map<String, int>? reputation,
     Object? legacyName = _unset,
     Map<String, int>? pathPoints,
@@ -246,6 +257,11 @@ class GameState {
     List<String>? achievedEndings,
     Object? pendingEndingId = _unset,
     List<String>? discoveredPowers,
+    List<ActiveBoost>? boosts,
+    bool? supportTier,
+    List<String>? ownedCosmetics,
+    Object? activeThemeId = _unset,
+    Map<String, String>? lastAdWatch,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -309,8 +325,10 @@ class GameState {
       raceId: raceId == _unset ? this.raceId : raceId as String?,
       tournamentsWon: tournamentsWon ?? this.tournamentsWon,
       warsWon: warsWon ?? this.warsWon,
-      lastTournamentAt: lastTournamentAt ?? this.lastTournamentAt,
-      lastWarAt: lastWarAt ?? this.lastWarAt,
+      lastTournamentAt: lastTournamentAt == _unset
+          ? this.lastTournamentAt
+          : lastTournamentAt as DateTime?,
+      lastWarAt: lastWarAt == _unset ? this.lastWarAt : lastWarAt as DateTime?,
       reputation: reputation ?? this.reputation,
       legacyName:
           legacyName == _unset ? this.legacyName : legacyName as String?,
@@ -324,11 +342,17 @@ class GameState {
           ? this.pendingEndingId
           : pendingEndingId as String?,
       discoveredPowers: discoveredPowers ?? this.discoveredPowers,
+      boosts: boosts ?? this.boosts,
+      supportTier: supportTier ?? this.supportTier,
+      ownedCosmetics: ownedCosmetics ?? this.ownedCosmetics,
+      activeThemeId:
+          activeThemeId == _unset ? this.activeThemeId : activeThemeId as String?,
+      lastAdWatch: lastAdWatch ?? this.lastAdWatch,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 9,
+        'version': 10,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -391,6 +415,11 @@ class GameState {
         'achievedEndings': achievedEndings,
         'pendingEndingId': pendingEndingId,
         'discoveredPowers': discoveredPowers,
+        'boosts': boosts.map((boost) => boost.toJson()).toList(),
+        'supportTier': supportTier,
+        'ownedCosmetics': ownedCosmetics,
+        'activeThemeId': activeThemeId,
+        'lastAdWatch': lastAdWatch,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -503,5 +532,17 @@ class GameState {
         discoveredPowers:
             (json['discoveredPowers'] as List<dynamic>? ?? const [])
                 .cast<String>(),
+        boosts: (json['boosts'] as List<dynamic>? ?? const [])
+            .map(
+              (entry) =>
+                  ActiveBoost.fromJson(entry as Map<String, dynamic>),
+            )
+            .toList(),
+        supportTier: json['supportTier'] as bool? ?? false,
+        ownedCosmetics: (json['ownedCosmetics'] as List<dynamic>? ?? const [])
+            .cast<String>(),
+        activeThemeId: json['activeThemeId'] as String?,
+        lastAdWatch: (json['lastAdWatch'] as Map<String, dynamic>? ?? const {})
+            .map((key, value) => MapEntry(key, value as String)),
       );
 }
