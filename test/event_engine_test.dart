@@ -153,4 +153,89 @@ void main() {
       closeTo(outcome.state.qi, 1e-9),
     );
   });
+
+  group('The Faceless Messenger', () {
+    final location = WorldCatalog.standardLocations().first;
+
+    GameState messengerState({double stones = 0, String raceId = 'human'}) {
+      return GameState.initial().copyWith(
+        raceId: raceId,
+        spiritStones: stones,
+        reputation: {'human': 340, 'demon': 0, 'demi_human': 0},
+        storyChapter: 2,
+      );
+    }
+
+    test('reforging costs 5000 stones and changes race', () {
+      final state = messengerState(stones: 5000);
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        1,
+        location,
+      );
+      expect(outcome, isNotNull);
+      expect(outcome!.state.raceId, 'demon');
+      expect(outcome.state.spiritStones, 0);
+      expect(outcome.state.reputation['human'], -200);
+      expect(outcome.state.storyChapter, 0);
+      expect(outcome.message, contains('reforged'));
+      expect(outcome.message, contains('Demon'));
+    });
+
+    test('old faction keeps other reputation untouched', () {
+      final state = messengerState(stones: 9000);
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        0,
+        location,
+      );
+      expect(outcome!.state.raceId, 'human');
+      expect(outcome.state.spiritStones, 4000);
+      expect(outcome.state.reputation['demon'], 0);
+    });
+
+    test('reforging into your own race is a plain payment', () {
+      final state = messengerState(stones: 5000);
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        0,
+        location,
+      );
+      expect(outcome!.state.raceId, 'human');
+      expect(outcome.state.reputation['human'], 340);
+      expect(outcome.state.storyChapter, 2);
+      expect(outcome.message, isNot(contains('reforged')));
+    });
+
+    test('insufficient stones leaves race and reputation untouched', () {
+      final state = messengerState(stones: 4999);
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        2,
+        location,
+      );
+      expect(outcome, isNotNull);
+      expect(outcome!.state.raceId, 'human');
+      expect(outcome.state.reputation['human'], 340);
+      expect(outcome.state.storyChapter, 2);
+      expect(outcome.message, contains('lack'));
+    });
+
+    test('refusing the messenger changes nothing', () {
+      final state = messengerState(stones: 9000, raceId: 'demi_human');
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        3,
+        location,
+      );
+      expect(outcome!.state.raceId, 'demi_human');
+      expect(outcome.state.spiritStones, 9000);
+      expect(outcome.state.storyChapter, 2);
+    });
+  });
 }

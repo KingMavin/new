@@ -10,6 +10,7 @@ import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/engine/disciple_engine.dart';
 import 'package:immortal_path/game/engine/encounter_engine.dart';
 import 'package:immortal_path/game/engine/ending_engine.dart';
+import 'package:immortal_path/game/engine/power_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/tournament_engine.dart';
@@ -21,6 +22,7 @@ import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/power.dart';
 import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
@@ -526,6 +528,14 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (loot.tamedCompanion != null) {
       lines.add('Tamed companion: ${loot.tamedCompanion!.name}');
     }
+    final powerId = PowerEngine.rollDiscovery(updated, location, _rng);
+    if (powerId != null) {
+      final power = PowerCatalog.byId(powerId)!;
+      updated = updated.copyWith(
+        discoveredPowers: [...updated.discoveredPowers, powerId],
+      );
+      lines.add('Discovered power: ${power.name} (${power.bonusLabel})');
+    }
     final reputationGain = ReputationEngine.huntGain(updated);
     updated = updated.copyWith(
       reputation: ReputationEngine.gain(updated, reputationGain),
@@ -657,6 +667,24 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     save();
     return outcome;
+  }
+
+  bool buySectPower(String id) {
+    final power = PowerCatalog.byId(id);
+    if (power == null || !power.isSectPower) return false;
+    if (_state.discoveredPowers.contains(id)) return false;
+    if (_state.sectId != power.sectId) return false;
+    if (SectEngine.rankOf(_state.contribution) < power.minSectRank) {
+      return false;
+    }
+    if (_state.contribution < power.contributionCost) return false;
+    _state = _state.copyWith(
+      contribution: _state.contribution - power.contributionCost,
+      discoveredPowers: [..._state.discoveredPowers, id],
+    );
+    notifyListeners();
+    save();
+    return true;
   }
 
   void acknowledgeEnding() {

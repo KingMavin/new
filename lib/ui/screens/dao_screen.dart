@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:immortal_path/game/engine/power_engine.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
+import 'package:immortal_path/game/models/power.dart';
+import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/technique.dart';
@@ -80,6 +84,25 @@ class DaoScreen extends StatelessWidget {
                         state.discoveredTechniques.contains(technique.id),
                     equipped: state.techniqueId == technique.id,
                     onEquip: () => controller.equipTechnique(technique.id),
+                  ),
+                const SizedBox(height: 16),
+                Text(
+                  'Special Powers',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Powers found in the wilds root themselves in your blood '
+                  'and follow you even through reincarnation. Sect arts are '
+                  'taught only to those who serve.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                for (final power in PowerCatalog.powers)
+                  _PowerCard(
+                    controller: controller,
+                    state: state,
+                    power: power,
                   ),
                 const SizedBox(height: 16),
                 Text(
@@ -232,6 +255,69 @@ class _TechniqueCard extends StatelessWidget {
                     child: const Text('Equip'),
                   )
                 : null,
+      ),
+    );
+  }
+}
+
+class _PowerCard extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+  final BloodlinePower power;
+
+  const _PowerCard({
+    required this.controller,
+    required this.state,
+    required this.power,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final discovered = PowerEngine.isDiscovered(state, power.id);
+    if (power.isSectPower) {
+      final sect = Sect.byId(power.sectId!);
+      final rank = SectEngine.rankOf(state.contribution);
+      final eligible = state.sectId == power.sectId &&
+          rank >= power.minSectRank &&
+          state.contribution >= power.contributionCost;
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.workspace_premium),
+          title: Text(power.name),
+          subtitle: Text(
+            discovered
+                ? '${power.bonusLabel}\n${power.description}'
+                : '${power.bonusLabel} \u00b7 taught only by the ${sect.name}. '
+                    'Requires ${SectEngine.rankNames[power.minSectRank]} rank '
+                    'and ${power.contributionCost} contribution.',
+          ),
+          isThreeLine: true,
+          trailing: discovered
+              ? const Chip(label: Text('Learned'))
+              : FilledButton.tonal(
+                  onPressed: eligible
+                      ? () => controller.buySectPower(power.id)
+                      : null,
+                  child: Text('${power.contributionCost} pts'),
+                ),
+        ),
+      );
+    }
+    return Card(
+      child: ListTile(
+        leading: Icon(
+          discovered ? Icons.flash_on : Icons.help_outline,
+          color: discovered ? Theme.of(context).colorScheme.primary : null,
+        ),
+        title: Text(discovered ? power.name : 'Unfound Power'),
+        subtitle: Text(
+          discovered
+              ? '${power.bonusLabel}\n${power.description}'
+              : 'A legend of the wilds \u2014 some say it lies where the '
+                  'strongest beasts make their dens.',
+        ),
+        isThreeLine: true,
+        trailing: discovered ? const Chip(label: Text('Ingrained')) : null,
       ),
     );
   }

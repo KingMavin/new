@@ -65,6 +65,15 @@ backdrops (gradient art per location) rather than animations.
 - Race-gated combat moments: demons get Bloodline Frenzy, demi-humans get Beast Senses, humans get Formation Tactics as mid-fight choices
 - A new random event (The Beggar at the Shrine) feeds the hidden endings; some story choices leave permanent flags
 
+## Phase 9 — Powers, sect arts & changing blood
+
+- Special powers hidden in the wilds: six legendary powers (Ember of the Fallen Phoenix, Dragon-Scale Heart, Thunder Marrow, Void Insight, Moonveil Blessing, The Sage's Last Word) that can surface after any battle — far more often in raids, fallen cities, and faction halls
+- Powers stack with everything else and are soul-deep: they follow you through reincarnation
+- Sect arts, taught only to serving members: Sword Intent (Heavenly Sword Sect, +8% attack), Merged Pill Scripture (Myriad Pill Valley, +8% qi), Grand Formation Insight (Mystic Formation Hall, +2% breakthrough) — each bought with 150 contribution and Inner Disciple rank
+- The Special Powers codex on the Dao screen tracks found powers, unfound legends, and sect arts you can buy
+- The Faceless Messenger: a rare wandering event will reforge your flesh into another race for 5,000 spirit stones — you change race, restart that race's story arc, and the faction you abandoned brands you Hated (−200 reputation, no standing bonus) on the map
+- Faction Standing now shows every faction's true opinion of you, including Hated
+
 ## Phase 7 — Faction reputation & race halls
 
 - Faction reputation: every hunt, tournament, and war earns reputation with your people’s faction (Verdant Empire, Ash Wastes Clans, or Border Forest Tribes); wars and tournaments earn far more than hunts
@@ -119,6 +128,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Rival faction clashes and reputation unlocks beyond the halls; more chapters per arc
-2. Market/shop and spirit herb garden; settings with save export/import
-3. Local notifications, audio, balance pass, optional background art packs
+1. Balance simulation and pass over the stacked multipliers; settings with save export/import
+2. More content inside existing systems: extra story chapters, events, regions, and hidden locations
+3. Local notifications, audio, optional background art packs; monetization scaffolding (opt-in rewarded ads, support/cosmetic purchases — never stat power)

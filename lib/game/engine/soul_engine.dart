@@ -113,6 +113,7 @@ class SoulEngine {
       immortalized: state.immortalized,
       legendSeen: state.legendSeen,
       achievedEndings: state.achievedEndings,
+      discoveredPowers: state.discoveredPowers,
     );
   }
 }

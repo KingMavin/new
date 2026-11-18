@@ -18,6 +18,8 @@ class EventChoice {
   final int qiPills;
   final bool gamble;
   final String? flag;
+  final double stonesFlatCost;
+  final String? raceChangeTo;
 
   const EventChoice({
     required this.label,
@@ -32,6 +34,8 @@ class EventChoice {
     this.qiPills = 0,
     this.gamble = false,
     this.flag,
+    this.stonesFlatCost = 0,
+    this.raceChangeTo,
   });
 }
 
@@ -251,13 +255,43 @@ class EventEngine {
           stonesCostFactor: 1.0,
           flag: 'gave_everything',
         ),
-  ];
-
         EventChoice(
           label: 'Turn away and keep walking',
         ),
       ],
     ),
+    GameEvent(
+      id: 'faceless_messenger',
+      title: 'The Faceless Messenger',
+      description:
+          'A masked alchemist waits at your gate with a cauldron of '
+          'moon-pale reagent. \u201cFlesh is a polymer, blood is an ink '
+          'that can be rewritten. I can reforge you into any of the '
+          'three peoples \u2014 for five thousand spirit stones, the '
+          'burn of a lifetime, and one certainty: the people you leave '
+          'will hate you for it.\u201d',
+      choices: [
+        EventChoice(
+          label: 'Reforge as Human',
+          stonesFlatCost: 5000,
+          raceChangeTo: 'human',
+        ),
+        EventChoice(
+          label: 'Reforge as Demon',
+          stonesFlatCost: 5000,
+          raceChangeTo: 'demon',
+        ),
+        EventChoice(
+          label: 'Reforge as Demi-human',
+          stonesFlatCost: 5000,
+          raceChangeTo: 'demi_human',
+        ),
+        EventChoice(
+          label: 'Refuse — your blood is your own',
+        ),
+      ],
+    ),
+  ];
 
   static GameEvent? byId(String id) {
     for (final event in catalog) {
@@ -287,7 +321,8 @@ class EventEngine {
     final choice = event.choices[choiceIndex];
     final random = rng ?? Random();
 
-    final stoneCost = location.spiritStoneReward * choice.stonesCostFactor;
+    final stoneCost = location.spiritStoneReward * choice.stonesCostFactor +
+        choice.stonesFlatCost;
     if (stoneCost > 0 && state.spiritStones < stoneCost) {
       return EventOutcome(
         state: state,
@@ -367,6 +402,26 @@ class EventEngine {
         !updated.storyFlags.contains(choice.flag)) {
       updated = updated.copyWith(
         storyFlags: [...updated.storyFlags, choice.flag!],
+      );
+    }
+    if (success &&
+        choice.raceChangeTo != null &&
+        choice.raceChangeTo != updated.raceId) {
+      final oldRace = updated.raceId;
+      final reputation = {...updated.reputation};
+      if (oldRace != null) reputation[oldRace] = -200;
+      updated = updated.copyWith(
+        raceId: choice.raceChangeTo,
+        reputation: reputation,
+        storyChapter: 0,
+      );
+      parts.add(
+        'your flesh is reforged — you are now '
+        '${choice.raceChangeTo == 'human'
+            ? 'Human'
+            : choice.raceChangeTo == 'demon'
+                ? 'Demon'
+                : 'Demi-human'}; your old people brand you a traitor',
       );
     }
 

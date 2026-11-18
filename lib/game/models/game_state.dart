@@ -67,6 +67,7 @@ class GameState {
   final bool legendSeen;
   final List<String> achievedEndings;
   final String? pendingEndingId;
+  final List<String> discoveredPowers;
 
   const GameState({
     required this.realmIndex,
@@ -130,6 +131,7 @@ class GameState {
     this.legendSeen = false,
     this.achievedEndings = const [],
     this.pendingEndingId,
+    this.discoveredPowers = const [],
   });
 
   factory GameState.initial() => GameState(
@@ -243,6 +245,7 @@ class GameState {
     bool? legendSeen,
     List<String>? achievedEndings,
     Object? pendingEndingId = _unset,
+    List<String>? discoveredPowers,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -320,11 +323,12 @@ class GameState {
       pendingEndingId: pendingEndingId == _unset
           ? this.pendingEndingId
           : pendingEndingId as String?,
+      discoveredPowers: discoveredPowers ?? this.discoveredPowers,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 8,
+        'version': 9,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -386,6 +390,7 @@ class GameState {
         'legendSeen': legendSeen,
         'achievedEndings': achievedEndings,
         'pendingEndingId': pendingEndingId,
+        'discoveredPowers': discoveredPowers,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -495,5 +500,8 @@ class GameState {
             (json['achievedEndings'] as List<dynamic>? ?? const [])
                 .cast<String>(),
         pendingEndingId: json['pendingEndingId'] as String?,
+        discoveredPowers:
+            (json['discoveredPowers'] as List<dynamic>? ?? const [])
+                .cast<String>(),
       );
 }

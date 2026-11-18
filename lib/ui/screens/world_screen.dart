@@ -314,9 +314,12 @@ class _FactionStandingCard extends StatelessWidget {
                     ),
                     Text(
                       entry.key == state.raceId
-                          ? '${ReputationEngine.tierName(ownRep)} \u00b7 '
+                          ? '${ReputationEngine.standingLabel(ownRep)} \u00b7 '
                               '$ownRep rep'
-                          : 'Stranger \u00b7 0 rep',
+                          : '${ReputationEngine.standingLabel(
+                              ReputationEngine.reputationOf(state, entry.key),
+                            )} \u00b7 '
+                              '${ReputationEngine.reputationOf(state, entry.key)} rep',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

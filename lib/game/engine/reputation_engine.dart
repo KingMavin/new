@@ -33,12 +33,16 @@ class ReputationEngine {
       state.raceId == null ? 0 : reputationOf(state, state.raceId!);
 
   static int tierOf(int reputation) {
+    if (reputation < 0) return -1;
     var tier = 0;
     for (var i = 0; i < tierThresholds.length; i++) {
       if (reputation >= tierThresholds[i]) tier = i;
     }
     return tier;
   }
+
+  static String standingLabel(int reputation) =>
+      reputation < 0 ? 'Hated' : tierNames[tierOf(reputation)];
 
   static String tierName(int reputation) => tierNames[tierOf(reputation)];
 
@@ -50,7 +54,9 @@ class ReputationEngine {
   }
 
   static double standingBonus(GameState state) =>
-      tierOf(ownReputation(state)) * 0.03;
+      tierOf(ownReputation(state)) < 0
+          ? 0.0
+          : tierOf(ownReputation(state)) * 0.03;
 
   static int huntGain(GameState state) => 5 + 3 * state.realmIndex;
 

@@ -315,6 +315,32 @@ void main() {
       expect(parsed.pendingEndingId, 'hidden_wheel');
     });
 
+    test('version 8 saves load with phase 9 defaults', () {
+      final v8 = GameState.initial().toJson()
+        ..['version'] = 8
+        ..remove('discoveredPowers');
+      final parsed = GameState.fromJson(v8);
+      expect(parsed.discoveredPowers, isEmpty);
+      expect(parsed.legacyName, isNull);
+      expect(parsed.immortalized, isFalse);
+    });
+
+    test('json roundtrip preserves discovered powers', () {
+      final state = GameState.initial().copyWith(
+        discoveredPowers: const ['phoenix_ember', 'sword_intent'],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.discoveredPowers, ['phoenix_ember', 'sword_intent']);
+    });
+
+    test('copyWith keeps discovered powers unless replaced', () {
+      final state = GameState.initial().copyWith(
+        discoveredPowers: const ['void_insight'],
+      );
+      final kept = state.copyWith(qi: 100);
+      expect(kept.discoveredPowers, ['void_insight']);
+    });
+
     test('version 3 saves load with phase 4 defaults', () {
       final v3 = GameState.initial().toJson()
         ..['version'] = 3

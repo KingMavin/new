@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/power_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
@@ -72,7 +73,8 @@ class CombatEngine {
             (1.0 + SoulEngine.attackBonus(state)) *
             SectEngine.attackMultiplier(state) *
             RaceEngine.attackMultiplier(state) *
-            (1.0 + StoryEngine.attackBonus(state)) +
+            (1.0 + StoryEngine.attackBonus(state)) *
+            (1.0 + PowerEngine.attackBonus(state)) +
         (state.weapon?.power ?? 0);
   }
 
@@ -83,7 +85,8 @@ class CombatEngine {
             (1.0 + 0.15 * state.stageIndex) *
             technique.defenseMultiplier *
             (1.0 + SoulEngine.defenseBonus(state)) *
-            RaceEngine.defenseMultiplier(state) +
+            RaceEngine.defenseMultiplier(state) *
+            (1.0 + PowerEngine.defenseBonus(state)) +
         (state.armor?.power ?? 0);
   }
 
@@ -94,7 +97,8 @@ class CombatEngine {
         (1.0 + 0.2 * state.stageIndex) *
         technique.hpMultiplier *
         (1.0 + SoulEngine.hpBonus(state)) *
-        RaceEngine.hpMultiplier(state);
+        RaceEngine.hpMultiplier(state) *
+        (1.0 + PowerEngine.hpBonus(state));
   }
 
   static bool isLocationUnlocked(GameState state, WorldLocation location) {
@@ -119,7 +123,8 @@ class CombatEngine {
         (1.0 + SoulEngine.stoneBonus(state)) *
         RaceEngine.stoneMultiplier(state) *
         (1.0 + ReputationEngine.standingBonus(state)) *
-        (1.0 + StoryEngine.stoneBonus(state));
+        (1.0 + StoryEngine.stoneBonus(state)) *
+        (1.0 + PowerEngine.stoneBonus(state));
     var herbs = 0;
     var cores = 0;
     Equipment? equipment;

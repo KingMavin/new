@@ -108,5 +108,29 @@ void main() {
         isTrue,
       );
     });
+
+    test('negative reputation is Hated with no standing bonus', () {
+      expect(ReputationEngine.tierOf(-200), -1);
+      expect(ReputationEngine.standingLabel(-200), 'Hated');
+      expect(ReputationEngine.standingLabel(-1), 'Hated');
+      final hated = GameState.initial().copyWith(
+        raceId: 'human',
+        reputation: const {'human': -200, 'demon': 0, 'demi_human': 0},
+      );
+      expect(ReputationEngine.ownReputation(hated), -200);
+      expect(ReputationEngine.standingBonus(hated), 0);
+    });
+
+    test('factions you never left still read as Stranger', () {
+      final state = GameState.initial().copyWith(
+        raceId: 'demon',
+        reputation: const {'demon': 120},
+      );
+      expect(
+        ReputationEngine.reputationOf(state, 'human'),
+        0,
+      );
+      expect(ReputationEngine.standingLabel(0), 'Stranger');
+    });
   });
 }
