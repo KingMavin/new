@@ -5,6 +5,7 @@ import 'package:immortal_path/ui/screens/world_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
 import 'package:immortal_path/ui/screens/dao_screen.dart';
 import 'package:immortal_path/ui/screens/home_screen.dart';
+import 'package:immortal_path/ui/screens/event_dialog.dart';
 import 'package:immortal_path/ui/screens/sect_screen.dart';
 
 class ImmortalPathApp extends StatelessWidget {
@@ -51,9 +52,11 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _index = 0;
+  String? _shownEventId;
 
   @override
   Widget build(BuildContext context) {
+    _maybeShowEvent(context);
     return Scaffold(
       body: IndexedStack(
         index: _index,
@@ -97,5 +100,22 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
     );
+  }
+
+  void _maybeShowEvent(BuildContext context) {
+    final eventId = widget.controller.state.pendingEventId;
+    if (eventId == null || _shownEventId == eventId) return;
+    _shownEventId = eventId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => EventDialog(
+          controller: widget.controller,
+          eventId: eventId,
+        ),
+      );
+    });
   }
 }

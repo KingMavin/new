@@ -114,6 +114,19 @@ LocationTheme themeForEncounter(EncounterKind kind, WorldLocation? location) {
   }
 }
 
+String encounterAsset(EncounterKind kind, WorldLocation? location) {
+  switch (kind) {
+    case EncounterKind.tournament:
+      return 'assets/images/screen_encounter.png';
+    case EncounterKind.war:
+      return 'assets/images/screen_encounter.png';
+    case EncounterKind.hunt:
+      return location == null
+          ? 'assets/images/screen_encounter.png'
+          : 'assets/images/loc_${location.id}.png';
+  }
+}
+
 String encounterTitle(EncounterKind kind, WorldLocation? location) {
   switch (kind) {
     case EncounterKind.tournament:

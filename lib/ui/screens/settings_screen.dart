@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/store_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class SettingsScreen extends StatefulWidget {
   final GameController controller;
@@ -16,7 +17,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackdropScaffold(
+      asset: BackdropCatalog.forScreen('settings'),
+
       appBar: AppBar(
         title: const Text('Settings'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

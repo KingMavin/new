@@ -12,6 +12,7 @@ import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class HomeScreen extends StatefulWidget {
   final GameController controller;
@@ -189,7 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final major = CultivationEngine.isMajorBreakthrough(state);
         final chance = CultivationEngine.effectiveBreakthroughChance(state);
         final progress = (state.qi / requirement).clamp(0.0, 1.0).toDouble();
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('home'),
+
           appBar: AppBar(
             title: const Text('Immortal Path'),
                     actions: [
@@ -417,6 +420,7 @@ class _StoryDialogState extends State<_StoryDialog> {
   @override
   Widget build(BuildContext context) {
     final chapter = widget.chapter;
+    final raceId = widget.controller.state.raceId;
     return AlertDialog(
       title: Text(chapter.title),
       content: SingleChildScrollView(
@@ -424,6 +428,17 @@ class _StoryDialogState extends State<_StoryDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                height: 110,
+                width: double.maxFinite,
+                child: BackdropImage(
+                  BackdropCatalog.forStory(raceId ?? 'human'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             Text(chapter.narration),
             const SizedBox(height: 12),
             if (_outcome == null)

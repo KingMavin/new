@@ -13,6 +13,7 @@ import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/sect_store_screen.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class SectScreen extends StatelessWidget {
   final GameController controller;
@@ -107,7 +108,9 @@ class SectScreen extends StatelessWidget {
       builder: (context, _) {
         final state = controller.state;
         final sect = SectEngine.sectOf(state);
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('sect'),
+
           appBar: AppBar(
             title: const Text('Sect'),
                     actions: [

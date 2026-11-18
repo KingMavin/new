@@ -18,11 +18,13 @@ import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/tournament_engine.dart';
 import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
+import 'package:immortal_path/game/engine/forge_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/store_engine.dart';
 import 'package:immortal_path/game/models/sect_store.dart';
+import 'package:immortal_path/game/models/forge.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/monetization.dart';
@@ -601,6 +603,17 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     save();
     return EventOutcome(state: _state, message: outcome.message);
+  }
+
+  ForgeOutcome? attemptForge(String recipeId) {
+    final recipe = ForgeCatalog.recipeById(recipeId);
+    if (recipe == null) return null;
+    final outcome = ForgeEngine.attempt(_state, recipe, rng: _rng);
+    if (outcome.state == _state) return null;
+    _state = outcome.state;
+    notifyListeners();
+    save();
+    return outcome;
   }
 
   bool craft(String recipeId) {

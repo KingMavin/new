@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/encounter_engine.dart';
 import 'package:immortal_path/game/models/world_location.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/theme/location_theme.dart';
 
@@ -62,6 +63,12 @@ class _EncounterScreenState extends State<EncounterScreen> {
                 ),
                 child: Stack(
                   children: [
+                    Positioned.fill(
+                      child: BackdropImage(
+                        encounterAsset(kind, widget.location),
+                        scrim: const [Color(0x22000000), Color(0x66000000)],
+                      ),
+                    ),
                     Center(
                       child: Icon(
                         theme.icon,

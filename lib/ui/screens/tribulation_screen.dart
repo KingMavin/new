@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 
@@ -54,6 +55,17 @@ class TribulationDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    height: 110,
+                    width: double.maxFinite,
+                    child: BackdropImage(
+                      'assets/images/screen_tribulation.png',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Text(
                   'Wave ${state.tribulationWavesCleared + 1} of '
                   '${state.tribulationWavesTotal}',

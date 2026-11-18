@@ -10,6 +10,7 @@ import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
 import 'package:immortal_path/ui/theme/location_theme.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class WorldScreen extends StatelessWidget {
   final GameController controller;
@@ -47,7 +48,9 @@ class WorldScreen extends StatelessWidget {
         final hall = state.raceId == null
             ? null
             : WorldCatalog.factionLocationFor(state.raceId!);
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('world'),
+
           appBar: AppBar(
             title: const Text('World Map'),
                     actions: [

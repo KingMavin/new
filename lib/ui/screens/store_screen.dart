@@ -5,6 +5,7 @@ import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class StoreScreen extends StatefulWidget {
   final GameController controller;
@@ -24,7 +25,9 @@ class _StoreScreenState extends State<StoreScreen> {
       animation: widget.controller,
       builder: (context, _) {
         final state = widget.controller.state;
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('store'),
+
           appBar: AppBar(
             title: const Text('Temple of Support'),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,

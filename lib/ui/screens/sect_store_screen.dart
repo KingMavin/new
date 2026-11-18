@@ -6,9 +6,12 @@ import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/sect_store.dart';
 import 'package:immortal_path/game/models/sect.dart';
+import 'package:immortal_path/game/models/forge.dart';
+import 'package:immortal_path/game/engine/forge_engine.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/store_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class SectStoreScreen extends StatelessWidget {
   final GameController controller;
@@ -22,7 +25,9 @@ class SectStoreScreen extends StatelessWidget {
       builder: (context, _) {
         final state = controller.state;
         final sect = state.sectId == null ? null : Sect.byId(state.sectId!);
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('sect'),
+
           appBar: AppBar(
             title: const Text('Sect Armory'),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -67,6 +72,25 @@ class SectStoreScreen extends StatelessWidget {
                 ),
               const SizedBox(height: 16),
               Text(
+                'Forge \u00b7 gamble the flames',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Feed the sect forge stones, herbs, and cores. Success is '
+                'never certain \u2014 a failed forging salvages only part of '
+                'the stones.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              for (final recipe in ForgeCatalog.recipes)
+                _ForgeCard(
+                  state: state,
+                  recipe: recipe,
+                  onForge: () => _forge(context, recipe),
+                ),
+              const SizedBox(height: 16),
+              Text(
                 'Offerings \u00b7 real coin',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -108,6 +132,17 @@ class SectStoreScreen extends StatelessWidget {
           ok
               ? '${item.name} is issued to you by the storeroom.'
               : 'The storeroom refuses the trade.',
+        ),
+      ),
+    );
+  }
+
+  void _forge(BuildContext context, ForgeRecipe recipe) {
+    final outcome = controller.attemptForge(recipe.id);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          outcome?.message ?? 'The forge does not accept the offering.',
         ),
       ),
     );
@@ -165,6 +200,54 @@ class _SectItemCard extends StatelessWidget {
           onPressed: blocker == null ? onBuy : null,
           child: Text('${formatNumber(cost)} stones'),
         ),
+      ),
+    );
+  }
+}
+
+class _ForgeCard extends StatelessWidget {
+  final GameState state;
+  final ForgeRecipe recipe;
+  final VoidCallback onForge;
+
+  const _ForgeCard({
+    required this.state,
+    required this.recipe,
+    required this.onForge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final stones = recipe.stoneCostFor(state.realmIndex);
+    final blocker = ForgeEngine.blocker(state, recipe);
+    final gradeLabel =
+        recipe.grade == 2 ? 'Earth' : recipe.grade == 3 ? 'Heaven' : 'Immortal';
+    final slotLabel = recipe.slot == EquipmentSlot.weapon
+        ? 'Weapon'
+        : recipe.slot == EquipmentSlot.armor
+            ? 'Armor'
+            : 'Amulet';
+    return Card(
+      child: ListTile(
+        leading: Icon(
+          recipe.slot == EquipmentSlot.weapon
+              ? Icons.colorize
+              : recipe.slot == EquipmentSlot.armor
+                  ? Icons.shield
+                  : Icons.auto_awesome,
+        ),
+        isThreeLine: true,
+        title: Text('Forge $slotLabel \u00b7 $gradeLabel'),
+        subtitle: Text(
+          'Needs ${formatNumber(stones.toDouble())} stones, '
+          '${recipe.herbCost} herbs, ${recipe.coreCost} cores \u00b7 '
+          '${(recipe.successChance * 100).toStringAsFixed(0)}% success',
+        ),
+        trailing: blocker == null
+            ? FilledButton(onPressed: onForge, child: const Text('Forge'))
+            : FilledButton.tonal(
+                onPressed: null,
+                child: Text('Missing materials')),
       ),
     );
   }

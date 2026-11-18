@@ -4,6 +4,7 @@ import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class AlchemyScreen extends StatefulWidget {
   final GameController controller;
@@ -44,7 +45,9 @@ class _AlchemyScreenState extends State<AlchemyScreen> {
       animation: widget.controller,
       builder: (context, _) {
         final state = widget.controller.state;
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('alchemy'),
+
           appBar: AppBar(
             title: const Text('Alchemy'),
                     actions: [

@@ -13,6 +13,7 @@ import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class DaoScreen extends StatelessWidget {
   final GameController controller;
@@ -34,7 +35,9 @@ class DaoScreen extends StatelessWidget {
       builder: (context, _) {
         final state = controller.state;
         final companion = state.companion;
-        return Scaffold(
+        return BackdropScaffold(
+          asset: BackdropCatalog.forScreen('dao'),
+
           appBar: AppBar(
             title: const Text('Dao'),
                     actions: [

@@ -101,6 +101,15 @@ Everything else (cooldowns, boost expiry, persistence, the store UI) already wor
 - Paid gear cannot break the ladder: heirlooms mint at Immortal-grade power for the realm you buy at, store gear auto-equips only when strictly better than what you carry, drops in later realms always outgrow them, and the sect sells nearly-as-good gear for earned stones
 - GameState v11: the amulet slot persists in saves; version 10 saves load with a null amulet, and all store grants survive reincarnation
 
+## Phase 13 — Art pass & the forge
+
+- Original still art for the whole game: 43 license-free painted backdrops (tool/generate_images.py, pure Dart-free Python, swappable 1:1 by keeping filenames) covering every screen (cultivation cave, misty world map, pill furnace, sect at dawn, star-lit Dao, storm tribulation, golden temple, bamboo settings, battlefield), every one of the 14 random events, all 17 world locations, and one entrance image per race's story arc
+- Each screen paints its image behind the cards under a dark scrim so text stays readable; the encounter screen and event dialogs use their location/event image as full header art
+- Random events are now actually playable: the event that triggers after a hunt opens as a full-screen narrated card with its own art and its 2–3 choices - until now events fired but had no UI to show them
+- The Forge arrives in the Sect Armory: 9 recipes (weapon/armor/amulet at Earth/Heaven/Immortal grade), paid in spirit stones (scaled 1.8x per realm) plus spirit herbs and beast cores
+- Forging is a gamble: 60%/35%/15% success by grade - failure shatters the materials and salvages only 40% of the stones; success mints gear 8% above the loot band of your realm and auto-equips only when strictly better
+- Real-coin heirlooms (Phase 12) remain the guaranteed high-end shortcut; the forge is the earned-stones gamble under them
+
 ## Phase 9 — Powers, sect arts & changing blood
 
 - Special powers hidden in the wilds: six legendary powers (Ember of the Fallen Phoenix, Dragon-Scale Heart, Thunder Marrow, Void Insight, Moonveil Blessing, The Sage's Last Word) that can surface after any battle — far more often in raids, fallen cities, and faction halls
