@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:immortal_path/game/engine/boost_engine.dart';
+import 'package:immortal_path/game/engine/mastery_engine.dart';
 import 'package:immortal_path/game/engine/power_engine.dart';
 import 'package:immortal_path/game/engine/race_engine.dart';
 import 'package:immortal_path/game/engine/reputation_engine.dart';
@@ -75,7 +76,8 @@ class CombatEngine {
             SectEngine.attackMultiplier(state) *
             RaceEngine.attackMultiplier(state) *
             (1.0 + StoryEngine.attackBonus(state)) *
-            (1.0 + PowerEngine.attackBonus(state)) +
+            (1.0 + PowerEngine.attackBonus(state)) *
+            (1.0 + MasteryEngine.bonus(state)) +
         (state.weapon?.power ?? 0) +
         (state.amulet?.power ?? 0) * 0.5;
   }

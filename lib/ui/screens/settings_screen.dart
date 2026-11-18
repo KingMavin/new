@@ -63,6 +63,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
+            'Sound',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          AnimatedBuilder(
+            animation: widget.controller,
+            builder: (context, _) => Card(
+              child: SwitchListTile(
+                secondary: const Icon(Icons.music_note),
+                title: const Text('Sound effects'),
+                subtitle: const Text(
+                  'Currently a silent scaffold \u2014 the hook exists, '
+                  'audio files arrive in a future update.',
+                ),
+                value: widget.controller.state.audioOn,
+                onChanged: (_) => widget.controller.toggleAudio(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
             'Temple of Support',
             style: Theme.of(context).textTheme.titleMedium,
           ),

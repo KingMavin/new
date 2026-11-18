@@ -120,6 +120,9 @@ class SoulEngine {
       ownedCosmetics: state.ownedCosmetics,
       activeThemeId: state.activeThemeId,
       lastAdWatch: state.lastAdWatch,
+      achievements: state.achievements,
+      techniqueMastery: state.techniqueMastery,
+      dailyLedgerClaimedOn: state.dailyLedgerClaimedOn,
     );
   }
 }

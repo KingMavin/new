@@ -5,7 +5,12 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:immortal_path/audio/audio_gateway.dart';
+import 'package:immortal_path/game/engine/achievements_engine.dart';
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
+import 'package:immortal_path/game/engine/journal_engine.dart';
+import 'package:immortal_path/game/engine/ledger_engine.dart';
+import 'package:immortal_path/game/engine/mastery_engine.dart';
 import 'package:immortal_path/game/engine/boost_engine.dart';
 import 'package:immortal_path/game/engine/combat_engine.dart';
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
@@ -27,6 +32,7 @@ import 'package:immortal_path/game/models/sect_store.dart';
 import 'package:immortal_path/game/models/forge.dart';
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
 import 'package:immortal_path/game/models/companion.dart';
+import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/power.dart';
@@ -39,9 +45,13 @@ import 'package:immortal_path/monetization/monetization_gateway.dart';
 import 'package:immortal_path/game/util/format.dart';
 
 class GameController extends ChangeNotifier with WidgetsBindingObserver {
-  GameController({SaveRepository? repository, MonetizationGateway? gateway})
-      : _repository = repository ?? SharedPrefsSaveRepository(),
-        _gateway = gateway ?? StubMonetizationGateway() {
+  GameController({
+    SaveRepository? repository,
+    MonetizationGateway? gateway,
+    AudioGateway? audio,
+  }) : _repository = repository ?? SharedPrefsSaveRepository(),
+        _gateway = gateway ?? StubMonetizationGateway(),
+        _audio = audio ?? const SilentAudioGateway() {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -54,6 +64,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
 
   final SaveRepository _repository;
   final MonetizationGateway _gateway;
+  final AudioGateway _audio;
   final Random _rng = Random();
   Timer? _timer;
   DateTime _lastTick = DateTime.now();
@@ -133,6 +144,11 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = report.stateAfter;
     if (report.counted >= _offlineReportThreshold) {
       _pendingOfflineReport = report;
+      _state = JournalEngine.record(
+        _state,
+        'While away: +${formatNumber(report.qiGained)} qi condensed '
+            'over ${formatDuration(report.counted)}.',
+      );
     }
   }
 
@@ -140,6 +156,33 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final report = _pendingOfflineReport;
     _pendingOfflineReport = null;
     return report;
+  }
+
+  void _sound(SoundEffect effect) {
+    if (_state.audioOn) _audio.play(effect);
+  }
+
+  void _settle({List<String>? journal, SoundEffect? sound}) {
+    var updated = _state;
+    if (journal != null) {
+      for (final line in journal.reversed) {
+        updated = JournalEngine.record(updated, line);
+      }
+    }
+    final before = updated.achievements.toSet();
+    updated = AchievementsEngine.evaluate(updated);
+    for (final id in updated.achievements) {
+      if (!before.contains(id)) {
+        final achievement = AchievementsEngine.byId(id);
+        updated = JournalEngine.record(
+          updated,
+          'Deed recognized: ${achievement?.title ?? id}',
+        );
+        sound ??= SoundEffect.acquisition;
+      }
+    }
+    if (sound != null) _sound(sound);
+    _state = updated;
   }
 
   void circulateQi() {
@@ -163,6 +206,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     }
     final result = CultivationEngine.attemptStageBreakthrough(_state);
     _state = result.state;
+    _settle(
+      journal: result.success ? [result.message] : null,
+      sound: result.success ? SoundEffect.breakthrough : null,
+    );
     notifyListeners();
     save();
     return BreakthroughAttempt(result: result);
@@ -176,6 +223,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (!wasAscended && _state.ascended) {
       _evaluateEnding();
     }
+    _settle(
+      journal: outcome.finished ? [outcome.message] : null,
+      sound: outcome.finished && outcome.success
+          ? SoundEffect.tribulationCleared
+          : null,
+    );
     notifyListeners();
     save();
     return outcome;
@@ -464,7 +517,18 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
       lastTournamentAt: DateTime.now(),
     );
+    if (won) _state = MasteryEngine.recordVictory(_state);
     _checkImmortalization();
+    _settle(
+      journal: [
+        won
+            ? 'Won a sect tournament: +${formatNumber(stones)} stones, '
+                '+$contribution contribution.'
+            : 'Fell in a sect tournament: +$contribution '
+                'contribution for standing tall.',
+      ],
+      sound: won ? SoundEffect.battleWon : null,
+    );
     _lastEncounterSummary = won
         ? '${TournamentEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -491,7 +555,19 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       warsWon: _state.warsWon + (won ? 1 : 0),
       lastWarAt: DateTime.now(),
     );
+    if (won) _state = MasteryEngine.recordVictory(_state);
     _checkImmortalization();
+    _settle(
+      journal: [
+        won
+            ? 'Carried the war banner to victory: '
+                '+${formatNumber(stones)} stones, +$contribution '
+                'contribution.'
+            : 'Held the war line: +$contribution contribution, '
+                '+$reputation reputation.',
+      ],
+      sound: won ? SoundEffect.battleWon : null,
+    );
     _lastEncounterSummary = won
         ? '${WarEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -518,6 +594,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     var updated = outcome.state;
 
     final lines = <String>[];
+    final journalLines = <String>[
+      'Hunt: ${finished.beast.name} slain in ${location.name}.',
+    ];
+
     if (loot.spiritStones > 0) {
       lines.add('+${formatNumber(loot.spiritStones)} spirit stones');
     }
@@ -546,6 +626,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
         discoveredPowers: [...updated.discoveredPowers, powerId],
       );
       lines.add('Discovered power: ${power.name} (${power.bonusLabel})');
+      journalLines.add('Discovered power: ${power.name}.');
     }
     final reputationGain = ReputationEngine.huntGain(updated);
     updated = updated.copyWith(
@@ -573,10 +654,15 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       updated = updated.copyWith(
         discoveredLocations: [...updated.discoveredLocations, hiddenId],
       );
+      journalLines.add(
+        'Hidden realm discovered: ${WorldCatalog.byId(hiddenId).name}.',
+      );
     }
 
-    _checkImmortalization();
     _state = updated;
+    _checkImmortalization();
+    _state = MasteryEngine.recordVictory(_state);
+    _settle(journal: journalLines, sound: SoundEffect.battleWon);
     _encounter = finished;
     notifyListeners();
     save();
@@ -600,6 +686,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     );
     if (outcome == null) return null;
     _state = outcome.state.copyWith(pendingEventId: null);
+    _settle(journal: [outcome.message], sound: SoundEffect.eventChime);
     notifyListeners();
     save();
     return EventOutcome(state: _state, message: outcome.message);
@@ -611,6 +698,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final outcome = ForgeEngine.attempt(_state, recipe, rng: _rng);
     if (outcome.state == _state) return null;
     _state = outcome.state;
+    _settle(
+      journal: [outcome.message],
+      sound: outcome.success ? SoundEffect.forgeStruck : null,
+    );
     notifyListeners();
     save();
     return outcome;
@@ -622,6 +713,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final updated = AlchemyEngine.craft(_state, recipe);
     if (updated == null) return false;
     _state = updated;
+    _settle(journal: ['Refined ${recipe.name}.']);
     notifyListeners();
     save();
     return true;
@@ -674,6 +766,13 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       legacyName: trimmed.isEmpty || trimmed.length > 20
           ? null
           : trimmed,
+    );
+    _settle(
+      journal: [
+        'Took first breath as a ${Race.byId(raceId).name} '
+            'in the mortal world.',
+      ],
+      sound: SoundEffect.eventChime,
     );
     notifyListeners();
     save();
@@ -733,6 +832,9 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final watched = await _gateway.showRewardedAd(placementId);
     if (!watched) return false;
     _state = BoostEngine.grantPlacement(_state, placement);
+    _settle(
+      journal: ['Accepted a temple blessing: ${placement.title}.'],
+    );
     notifyListeners();
     save();
     return true;
@@ -782,6 +884,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       ownedCosmetics: [...updated.ownedCosmetics, ...granted],
     );
     _state = updated;
+    _settle(
+      journal: ['Acquired ${product.title}.'],
+      sound: SoundEffect.acquisition,
+    );
     notifyListeners();
     save();
     return true;
@@ -804,6 +910,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (item == null) return false;
     if (SectStoreEngine.buyBlocker(_state, item) != null) return false;
     _state = SectStoreEngine.buy(_state, item);
+    _settle(
+      journal: ['Purchased ${item.name} from the sect armory.'],
+      sound: SoundEffect.acquisition,
+    );
     notifyListeners();
     save();
     return true;
@@ -833,6 +943,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = _state.copyWith(
       contribution: _state.contribution - power.contributionCost,
       discoveredPowers: [..._state.discoveredPowers, id],
+    );
+    _settle(
+      journal: ['Learned power: ${power.name}.'],
+      sound: SoundEffect.acquisition,
     );
     notifyListeners();
     save();
@@ -879,6 +993,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   void reincarnate() {
     if (!SoulEngine.canReincarnate(_state)) return;
     _state = SoulEngine.reincarnate(_state);
+    _settle(
+      journal: ['The wheel turns \u2014 a new life begins.'],
+      sound: SoundEffect.eventChime,
+    );
     notifyListeners();
     save();
   }
@@ -896,6 +1014,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   bool joinSect(String sectId) {
     if (!SectEngine.canJoin(_state)) return false;
     _state = SectEngine.join(_state, sectId);
+    _settle(
+      journal: ['Sworn to the ${Sect.byId(sectId).name}.'],
+      sound: SoundEffect.eventChime,
+    );
     notifyListeners();
     save();
     return true;
@@ -930,6 +1052,34 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     save();
     return true;
   }
+
+  bool canClaimDailyLedger() => LedgerEngine.canClaim(_state);
+
+  String dailyLedgerOmen() =>
+      LedgerEngine.omenFor(LedgerEngine.dayOf(DateTime.now()));
+
+  void claimDailyLedger() {
+    if (!LedgerEngine.canClaim(_state)) return;
+    _state = LedgerEngine.claim(_state, now: DateTime.now());
+    _settle(sound: SoundEffect.ledgerClaimed);
+    notifyListeners();
+    save();
+  }
+
+  void completeIntro() {
+    if (_state.introSeen) return;
+    _state = _state.copyWith(introSeen: true);
+    notifyListeners();
+    save();
+  }
+
+  void toggleAudio() {
+    _state = _state.copyWith(audioOn: !_state.audioOn);
+    notifyListeners();
+    save();
+  }
+
+  int techniqueMasteryLevel() => MasteryEngine.levelOf(_state);
 
   Future<void> save() async {
     _state = _state.copyWith(lastSaved: DateTime.now());

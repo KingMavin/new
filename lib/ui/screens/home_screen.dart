@@ -10,6 +10,7 @@ import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/onboarding_screen.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
@@ -28,8 +29,24 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showRaceSelectionIfNeeded();
+      _showIntroIfNeeded();
     });
+  }
+
+  void _showIntroIfNeeded() {
+    if (widget.controller.state.introSeen) {
+      _showRaceSelectionIfNeeded();
+      return;
+    }
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => OnboardingDialog(
+        controller: widget.controller,
+        onDone: _showRaceSelectionIfNeeded,
+      ),
+    );
   }
 
   void _showRaceSelectionIfNeeded() {
@@ -171,6 +188,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     final result = attempt.result;
     if (result == null || !mounted) return;
+    if (result.success) {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) =>
+            _BreakthroughCeremony(message: result.message),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(result.message),
@@ -190,6 +216,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final major = CultivationEngine.isMajorBreakthrough(state);
         final chance = CultivationEngine.effectiveBreakthroughChance(state);
         final progress = (state.qi / requirement).clamp(0.0, 1.0).toDouble();
+        final activeBoosts = state.boosts
+            .where((boost) => boost.isActive(DateTime.now()))
+            .toList();
         return BackdropScaffold(
           asset: BackdropCatalog.forScreen('home'),
 
@@ -211,6 +240,32 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (activeBoosts.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final boost in activeBoosts)
+                        Chip(
+                          avatar: Icon(
+                            boost.kind == 'qi'
+                                ? Icons.spa
+                                : boost.kind == 'stones'
+                                    ? Icons.diamond_outlined
+                                    : Icons.bolt,
+                            size: 16,
+                          ),
+                          label: Text(
+                            '${boost.kind} '
+                                '\u00d7${boost.multiplier.toStringAsFixed(1)}'
+                                ' \u00b7 '
+                                '${formatDuration(boost.expiresAt.difference(DateTime.now()))}'
+                                ' left',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ),
                 _RealmCard(state: state),
                 const SizedBox(height: 16),
                 _QiCard(
@@ -220,6 +275,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 _StoryCard(controller: widget.controller, state: state),
+                const SizedBox(height: 16),
+                if (widget.controller.canClaimDailyLedger())
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sect Ledger',
+                            style:
+                                Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.controller.dailyLedgerOmen(),
+                            style:
+                                Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 8),
+                          FilledButton.icon(
+                            onPressed: () =>
+                                widget.controller.claimDailyLedger(),
+                            icon: const Icon(Icons.history_edu),
+                            label: const Text('Sign the Ledger'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 if (!state.ascended && state.tribulationActive)
                   Card(
@@ -815,6 +900,74 @@ class _StatsCard extends StatelessWidget {
                 .textTheme
                 .bodyMedium
                 ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BreakthroughCeremony extends StatelessWidget {
+
+  final String message;
+
+  const _BreakthroughCeremony({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: const Color(0xFF0C0E14),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          BackdropImage(
+            BackdropCatalog.forScreen('dao'),
+            scrim: const [
+              Color(0x22000000),
+              Color(0xCC000000),
+              Color(0xFF0C0E14),
+            ],
+          ),
+          Align(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '\u2735',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 40,
+                      color: Colors.amberAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Breakthrough',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amberAccent,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Continue'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

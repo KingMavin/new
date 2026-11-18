@@ -1,6 +1,7 @@
 import 'companion.dart';
 import 'disciple.dart';
 import 'equipment.dart';
+import 'journal.dart';
 import 'monetization.dart';
 import 'realm_ladder.dart';
 
@@ -75,6 +76,12 @@ class GameState {
   final List<String> ownedCosmetics;
   final String? activeThemeId;
   final Map<String, String> lastAdWatch;
+  final bool introSeen;
+  final List<JournalEntry> journal;
+  final int dailyLedgerClaimedOn;
+  final List<String> achievements;
+  final Map<String, int> techniqueMastery;
+  final bool audioOn;
 
   const GameState({
     required this.realmIndex,
@@ -145,6 +152,12 @@ class GameState {
     this.ownedCosmetics = const [],
     this.activeThemeId,
     this.lastAdWatch = const {},
+    this.introSeen = true,
+    this.journal = const [],
+    this.dailyLedgerClaimedOn = -1,
+    this.achievements = const [],
+    this.techniqueMastery = const {},
+    this.audioOn = true,
   });
 
   factory GameState.initial() => GameState(
@@ -157,6 +170,7 @@ class GameState {
         ascended: false,
         runStarted: DateTime.now(),
         lastSaved: DateTime.now(),
+        introSeen: false,
         spiritStones: 0,
         spiritHerbs: 0,
         beastCores: 0,
@@ -266,6 +280,12 @@ class GameState {
     List<String>? ownedCosmetics,
     Object? activeThemeId = _unset,
     Map<String, String>? lastAdWatch,
+    bool? introSeen,
+    List<JournalEntry>? journal,
+    int? dailyLedgerClaimedOn,
+    List<String>? achievements,
+    Map<String, int>? techniqueMastery,
+    bool? audioOn,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -353,11 +373,18 @@ class GameState {
       activeThemeId:
           activeThemeId == _unset ? this.activeThemeId : activeThemeId as String?,
       lastAdWatch: lastAdWatch ?? this.lastAdWatch,
+      introSeen: introSeen ?? this.introSeen,
+      journal: journal ?? this.journal,
+      dailyLedgerClaimedOn:
+          dailyLedgerClaimedOn ?? this.dailyLedgerClaimedOn,
+      achievements: achievements ?? this.achievements,
+      techniqueMastery: techniqueMastery ?? this.techniqueMastery,
+      audioOn: audioOn ?? this.audioOn,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 11,
+        'version': 12,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -426,6 +453,12 @@ class GameState {
         'ownedCosmetics': ownedCosmetics,
         'activeThemeId': activeThemeId,
         'lastAdWatch': lastAdWatch,
+        'introSeen': introSeen,
+        'journal': journal.map((entry) => entry.toJson()).toList(),
+        'dailyLedgerClaimedOn': dailyLedgerClaimedOn,
+        'achievements': achievements,
+        'techniqueMastery': techniqueMastery,
+        'audioOn': audioOn,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -553,5 +586,21 @@ class GameState {
         activeThemeId: json['activeThemeId'] as String?,
         lastAdWatch: (json['lastAdWatch'] as Map<String, dynamic>? ?? const {})
             .map((key, value) => MapEntry(key, value as String)),
+        introSeen: json['introSeen'] as bool? ?? true,
+        journal: (json['journal'] as List<dynamic>? ?? const [])
+            .map(
+              (entry) =>
+                  JournalEntry.fromJson(entry as Map<String, dynamic>),
+            )
+            .toList(),
+        dailyLedgerClaimedOn: json['dailyLedgerClaimedOn'] as int? ?? -1,
+        achievements: (json['achievements'] as List<dynamic>? ?? const [])
+            .cast<String>(),
+        techniqueMastery:
+            (json['techniqueMastery'] as Map<String, dynamic>? ?? const {})
+                .map(
+                  (key, value) => MapEntry(key, (value as num).toInt()),
+                ),
+        audioOn: json['audioOn'] as bool? ?? true,
       );
 }

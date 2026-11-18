@@ -4,6 +4,7 @@ import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/disciple.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/journal.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 
@@ -443,6 +444,71 @@ void main() {
       expect(parsed.companion, isNull);
       expect(parsed.tribulationActive, isFalse);
       expect(parsed.tribulationsSurvived, 0);
+    });
+  });
+
+  group('phase 14 polish state', () {
+    test('version 11 saves load with polish defaults', () {
+      final v11 = GameState.initial().toJson()
+        ..['version'] = 11
+        ..remove('introSeen')
+        ..remove('journal')
+        ..remove('dailyLedgerClaimedOn')
+        ..remove('achievements')
+        ..remove('techniqueMastery')
+        ..remove('audioOn');
+      final parsed = GameState.fromJson(v11);
+      expect(parsed.introSeen, isTrue);
+      expect(parsed.journal, isEmpty);
+      expect(parsed.dailyLedgerClaimedOn, -1);
+      expect(parsed.achievements, isEmpty);
+      expect(parsed.techniqueMastery, isEmpty);
+      expect(parsed.audioOn, isTrue);
+    });
+
+    test('a fresh save asks for the intro, old saves do not', () {
+      expect(GameState.initial().introSeen, isFalse);
+      final returning = GameState.fromJson(
+        GameState.initial().toJson()..remove('introSeen'),
+      );
+      expect(returning.introSeen, isTrue);
+    });
+
+    test('json roundtrip preserves the chronicle and deeds', () {
+      final entryTime = DateTime(2026, 3, 10, 15, 30);
+      final state = GameState.initial().copyWith(
+        introSeen: false,
+        audioOn: false,
+        dailyLedgerClaimedOn: 20261,
+        achievements: const ['first_blood', 'hunter'],
+        techniqueMastery: const {'basic': 7},
+        journal: [
+          JournalEntry(
+            time: entryTime,
+            text: 'Hunt: Iron Tusk slain in Bamboo Wilds.',
+          ),
+          JournalEntry(
+            time: entryTime,
+            text: 'Deed recognized: First Blood',
+          ),
+        ],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.introSeen, isFalse);
+      expect(parsed.audioOn, isFalse);
+      expect(parsed.dailyLedgerClaimedOn, 20261);
+      expect(parsed.achievements, ['first_blood', 'hunter']);
+      expect(parsed.techniqueMastery, {'basic': 7});
+      expect(parsed.journal, hasLength(2));
+      expect(
+        parsed.journal.first.text,
+        'Hunt: Iron Tusk slain in Bamboo Wilds.',
+      );
+      expect(parsed.journal.first.time, entryTime);
+    });
+
+    test('version marker is 12', () {
+      expect(GameState.initial().toJson()['version'], 12);
     });
   });
 }

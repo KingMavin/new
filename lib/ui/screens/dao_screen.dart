@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:immortal_path/game/engine/achievements_engine.dart';
 import 'package:immortal_path/game/engine/power_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
@@ -97,6 +98,12 @@ class DaoScreen extends StatelessWidget {
                     discovered:
                         state.discoveredTechniques.contains(technique.id),
                     equipped: state.techniqueId == technique.id,
+                    masteryLabel: state.techniqueId == technique.id
+                        ? 'Mastery Lv ${controller.techniqueMasteryLevel()}'
+                            '/15 \u00b7 attack '
+                            '+${controller.techniqueMasteryLevel()}% '
+                            'per victory'
+                        : null,
                     onEquip: () => controller.equipTechnique(technique.id),
                   ),
                 const SizedBox(height: 16),
@@ -162,6 +169,20 @@ class DaoScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 _CodexCard(state: state),
+                const SizedBox(height: 16),
+                Text(
+                  'Chronicle',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                _ChronicleCard(controller: controller, state: state),
+                const SizedBox(height: 16),
+                Text(
+                  'Deeds',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                _AchievementsCard(controller: controller, state: state),
               ],
             ),
           ),
@@ -244,10 +265,13 @@ class _TechniqueCard extends StatelessWidget {
   final bool equipped;
   final VoidCallback onEquip;
 
+  final String? masteryLabel;
+
   const _TechniqueCard({
     required this.technique,
     required this.discovered,
     required this.equipped,
+    this.masteryLabel,
     required this.onEquip,
   });
 
@@ -260,7 +284,13 @@ class _TechniqueCard extends StatelessWidget {
           color: equipped ? Theme.of(context).colorScheme.primary : null,
         ),
         title: Text(discovered ? technique.name : 'Undiscovered Technique'),
-        subtitle: Text(discovered ? technique.description : '???'),
+        subtitle: Text(
+          discovered
+              ? (masteryLabel == null
+                  ? technique.description
+                  : '${technique.description}\n$masteryLabel')
+              : '???',
+        ),
         trailing: equipped
             ? const Chip(label: Text('Active'))
             : discovered
@@ -388,6 +418,174 @@ class _CodexCard extends StatelessWidget {
             ...entries,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChronicleCard extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+
+  const _ChronicleCard({required this.controller, required this.state});
+
+  String _stamp(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  void _openFullChronicle(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Chronicle'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: state.journal.length,
+            itemBuilder: (context, index) {
+              final entry = state.journal[index];
+              return ListTile(
+                dense: true,
+                leading: const Icon(Icons.history, size: 18),
+                title: Text(entry.text),
+                subtitle: Text(_stamp(entry.time)),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = state.journal.take(8).toList();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (entries.isEmpty)
+              Text(
+                'Your chronicle is unwritten. Hunts, deeds and fortunes '
+                'will collect here for this life.',
+                style: Theme.of(context).textTheme.bodySmall,
+              )
+            else
+              for (final entry in entries)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6),
+                        child: Icon(Icons.circle, size: 6),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          entry.text,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _stamp(entry.time),
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ],
+                  ),
+                ),
+            if (entries.isNotEmpty)
+              TextButton(
+                onPressed: () => _openFullChronicle(context),
+                child: const Text('View full chronicle'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AchievementsCard extends StatelessWidget {
+  final GameController controller;
+  final GameState state;
+
+  const _AchievementsCard({required this.controller, required this.state});
+
+  void _openCodex(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Codex of Deeds'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: AchievementsEngine.catalog.length,
+            itemBuilder: (context, index) {
+              final achievement = AchievementsEngine.catalog[index];
+              final earned = state.achievements.contains(achievement.id);
+              return ListTile(
+                dense: true,
+                leading: Icon(
+                  earned ? Icons.check_circle : Icons.lock_outline,
+                  color: earned
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).disabledColor,
+                  size: 20,
+                ),
+                title: Text(
+                  achievement.title,
+                  style: TextStyle(
+                    color: earned
+                        ? null
+                        : Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                ),
+                subtitle: Text(achievement.description),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.military_tech),
+        title: Text(
+          'Deeds \u00b7 ${state.achievements.length}/'
+          '${AchievementsEngine.catalog.length}',
+        ),
+        subtitle: const Text(
+          'Titles collected across every life for milestones of the path.',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => _openCodex(context),
       ),
     );
   }

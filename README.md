@@ -137,6 +137,17 @@ Everything else (cooldowns, boost expiry, persistence, the store UI) already wor
 - Alchemy: brew Qi Gathering, Foundation (+breakthrough chance), and Longevity pills from herbs, cores, and stones
 - Three-tab interface: Cultivate, Adventure, Alchemy
 
+## Phase 14 — Polish pass
+
+- Onboarding journey: five illustrated slides (mortal world, qi loop, wilds, sects & forge, Temple of Support) shown on first launch before origin selection; Skippable once, never shown again (`introSeen` in the save)
+- Chronicle journal: every meaningful beat — hunts, breakthroughs, tribulation outcomes, event results, forge attempts, sect oaths, purchases, acquisitions of power and hidden realms, offline cultivation while away — is written to a 60-entry per-life chronicle; newest eight shown in the Chronicle card on the Dao screen with a full-chronicle dialog
+- Daily Sect Ledger: sign once per day for one of eight deterministic omens, spirit stones scaled by realm (150 × 1.8^realm) and 2 qi pills; the ledger card appears on home whenever today's signature is missing
+- Codex of Deeds: 23 achievements checked automatically after hunts, breakthroughs, tribulations, events, tournaments, wars, forges and purchases; earned deeds announce themselves in the chronicle, are browsable from the Deeds card on the Dao screen, and are purely cosmetic badges
+- Technique mastery: each battle victory with an equipped technique deepens its mastery (+1% attack per victory, capped at +15% at level 15); shown on the equipped technique's card, resets with each new life
+- Breakthrough ceremony: successful stage breakthroughs now get a full-screen still backdrop and heralding text instead of a snackbar; failures stay as snackbars
+- Boost chips: active Temple blessings show as live-countdown chips atop the home screen
+- Audio gateway: `AudioGateway` abstraction with a silent stub and a Sound settings toggle; swap in a real player later by implementing the gateway — no gameplay code changes needed
+
 ## Getting started
 
 This repository contains the Dart/Flutter sources. Generate the platform
@@ -175,6 +186,6 @@ progress consistent and unit-testable.
 ## Roadmap
 
 1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
-2. Local notifications, audio, optional background art packs
+2. Local notifications, real audio through the audio gateway, optional background art packs
 3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the shop honest
 4. Expand the stores: seasonal heirloom sets, sect-liveried gear skins, offline cap bundles as gifts
