@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -667,6 +668,31 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     save();
     return outcome;
+  }
+
+  String exportSaveJson() => jsonEncode(_state.toJson());
+
+  bool importSaveJson(String raw) {
+    if (raw.trim().isEmpty) return false;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return false;
+      final parsed = GameState.fromJson(decoded);
+      _state = parsed;
+      notifyListeners();
+      save();
+      return true;
+    } on FormatException {
+      return false;
+    } on TypeError {
+      return false;
+    }
+  }
+
+  void resetGame() {
+    _state = GameState.initial();
+    notifyListeners();
+    save();
   }
 
   bool buySectPower(String id) {

@@ -45,8 +45,11 @@ class BreakthroughAttempt {
 }
 
 class CultivationEngine {
+  static const double realmQiGrowth = 3.8;
+
   static double qiPerSecond(GameState state) {
-    final realmMultiplier = pow(2.0, state.realmIndex).toDouble();
+    final realmMultiplier =
+        pow(CultivationEngine.realmQiGrowth, state.realmIndex).toDouble();
     final stageMultiplier = 1.0 + 0.5 * state.stageIndex;
     final technique = Technique.byId(state.techniqueId);
     final companionMultiplier = 1.0 + (state.companion?.qiBonus ?? 0);

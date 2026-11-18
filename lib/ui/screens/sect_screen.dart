@@ -10,6 +10,7 @@ import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
 
 class SectScreen extends StatelessWidget {
@@ -108,7 +109,17 @@ class SectScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Sect'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: 'Settings',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => SettingsScreen(controller: controller),
+                  ),
+                ),
+              ),
+            ],
           ),
           body: SafeArea(
             child: ListView(

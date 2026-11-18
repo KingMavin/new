@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class Beast {
   final String name;
   final double hp;
@@ -66,19 +68,23 @@ class WorldLocation {
 }
 
 class WorldCatalog {
-  static Beast _beast(String name, double scale, String bonusType) => Beast(
+  static double _realmScale(int realm) => pow(2.0, realm).toDouble();
+
+  static Beast _beast(String name, int realm, double difficulty, String bonusType) =>
+      Beast(
         name: name,
-        hp: 40 * scale,
-        attack: 8 * scale,
-        defense: 3 * scale,
+        hp: 40 * difficulty * _realmScale(realm),
+        attack: 8 * difficulty * _realmScale(realm),
+        defense: 3 * difficulty * _realmScale(realm),
         bonusType: bonusType,
       );
 
-  static Beast _elite(String name, double scale, String bonusType) => Beast(
+  static Beast _elite(String name, int realm, double difficulty, String bonusType) =>
+      Beast(
         name: name,
-        hp: 40 * scale * 2.5,
-        attack: 8 * scale * 1.3,
-        defense: 3 * scale * 1.5,
+        hp: 100 * difficulty * _realmScale(realm),
+        attack: 10.4 * difficulty * _realmScale(realm),
+        defense: 4.5 * difficulty * _realmScale(realm),
         bonusType: bonusType,
       );
 
@@ -102,8 +108,8 @@ class WorldCatalog {
       spiritStoneReward: 10,
       maxEquipmentGrade: 1,
       beasts: [
-        _beast('Bamboo Viper', 1, 'attack'),
-        _beast('Green Shadow Hare', 0.8, 'qi'),
+        _beast('Bamboo Viper', 0, 1.1, 'attack'),
+        _beast('Green Shadow Hare', 0, 0.9, 'qi'),
       ],
     ),
     WorldLocation(
@@ -118,8 +124,8 @@ class WorldCatalog {
       spiritStoneReward: 25,
       maxEquipmentGrade: 1,
       beasts: [
-        _beast('Iron Fang Wolf', 2.2, 'attack'),
-        _beast('Mist Roc Chick', 1.9, 'qi'),
+        _beast('Iron Fang Wolf', 1, 1.15, 'attack'),
+        _beast('Mist Roc Chick', 1, 0.95, 'qi'),
       ],
     ),
     WorldLocation(
@@ -134,8 +140,8 @@ class WorldCatalog {
       spiritStoneReward: 60,
       maxEquipmentGrade: 2,
       beasts: [
-        _beast('Lotus Python', 4.84, 'attack'),
-        _beast('Azure Carp Demon', 4.2, 'qi'),
+        _beast('Lotus Python', 2, 1.25, 'attack'),
+        _beast('Azure Carp Demon', 2, 1.1, 'qi'),
       ],
     ),
     WorldLocation(
@@ -150,8 +156,8 @@ class WorldCatalog {
       spiritStoneReward: 150,
       maxEquipmentGrade: 2,
       beasts: [
-        _beast('Ember Lion', 10.65, 'attack'),
-        _beast('Magma Toad', 9.3, 'attack'),
+        _beast('Ember Lion', 3, 1.35, 'attack'),
+        _beast('Magma Toad', 3, 1.15, 'attack'),
       ],
     ),
     WorldLocation(
@@ -166,8 +172,8 @@ class WorldCatalog {
       spiritStoneReward: 380,
       maxEquipmentGrade: 3,
       beasts: [
-        _beast('Frost Serpent', 23.43, 'attack'),
-        _beast('Ice Crow', 20, 'qi'),
+        _beast('Frost Serpent', 4, 1.45, 'attack'),
+        _beast('Ice Crow', 4, 1.3, 'qi'),
       ],
     ),
     WorldLocation(
@@ -182,8 +188,8 @@ class WorldCatalog {
       spiritStoneReward: 900,
       maxEquipmentGrade: 3,
       beasts: [
-        _beast('Golden Sand Ape', 51.54, 'attack'),
-        _beast('Storm Rhino', 45, 'attack'),
+        _beast('Golden Sand Ape', 5, 1.45, 'attack'),
+        _beast('Storm Rhino', 5, 1.3, 'attack'),
       ],
     ),
     WorldLocation(
@@ -198,8 +204,8 @@ class WorldCatalog {
       spiritStoneReward: 2200,
       maxEquipmentGrade: 4,
       beasts: [
-        _beast('Sword Wraith', 113.4, 'attack'),
-        _beast('Grave Sentinel', 100, 'qi'),
+        _beast('Sword Wraith', 6, 1.55, 'attack'),
+        _beast('Grave Sentinel', 6, 1.4, 'qi'),
       ],
     ),
     WorldLocation(
@@ -214,8 +220,8 @@ class WorldCatalog {
       spiritStoneReward: 5500,
       maxEquipmentGrade: 4,
       beasts: [
-        _beast('Hell Hound', 249.5, 'attack'),
-        _beast('Abyss Spider', 220, 'qi'),
+        _beast('Hell Hound', 7, 1.55, 'attack'),
+        _beast('Abyss Spider', 7, 1.4, 'qi'),
       ],
     ),
     WorldLocation(
@@ -231,8 +237,8 @@ class WorldCatalog {
       spiritStoneReward: 13000,
       maxEquipmentGrade: 4,
       beasts: [
-        _beast('Gate Guardian', 548.8, 'attack'),
-        _beast('Thunder Peng', 480, 'qi'),
+        _beast('Gate Guardian', 8, 1.55, 'attack'),
+        _beast('Thunder Peng', 8, 1.45, 'qi'),
       ],
     ),
     WorldLocation(
@@ -250,7 +256,7 @@ class WorldCatalog {
       spiritStoneReward: 80,
       maxEquipmentGrade: 2,
       beasts: [
-        _elite('Jade Sentinel Construct', 2.2, 'qi'),
+        _elite('Jade Sentinel Construct', 1, 1.35, 'qi'),
       ],
     ),
     WorldLocation(
@@ -268,7 +274,7 @@ class WorldCatalog {
       spiritStoneReward: 200,
       maxEquipmentGrade: 3,
       beasts: [
-        _elite('Sanctum Flame Warden', 4.84, 'attack'),
+        _elite('Sanctum Flame Warden', 2, 1.4, 'attack'),
       ],
     ),
     WorldLocation(
@@ -286,7 +292,7 @@ class WorldCatalog {
       spiritStoneReward: 600,
       maxEquipmentGrade: 3,
       beasts: [
-        _elite('Moonveil Stag Sovereign', 10.65, 'qi'),
+        _elite('Moonveil Stag Sovereign', 3, 1.4, 'qi'),
       ],
     ),
     WorldLocation(
@@ -302,7 +308,7 @@ class WorldCatalog {
       spiritStoneReward: 120,
       maxEquipmentGrade: 2,
       beasts: [
-        _elite('Crown Prince Wraith', 4.84, 'qi'),
+        _elite('Crown Prince Wraith', 2, 1.35, 'qi'),
       ],
     ),
     WorldLocation(
@@ -318,7 +324,7 @@ class WorldCatalog {
       spiritStoneReward: 400,
       maxEquipmentGrade: 3,
       beasts: [
-        _elite('Ossuary Sovereign', 10.65, 'attack'),
+        _elite('Ossuary Sovereign', 3, 1.45, 'attack'),
       ],
     ),
     WorldLocation(
@@ -337,7 +343,7 @@ class WorldCatalog {
       spiritStoneReward: 1000,
       maxEquipmentGrade: 4,
       beasts: [
-        _elite('Vault Sword Spirit', 23.43, 'attack'),
+        _elite('Vault Sword Spirit', 4, 1.45, 'attack'),
       ],
     ),
     WorldLocation(
@@ -353,7 +359,7 @@ class WorldCatalog {
       spiritStoneReward: 2500,
       maxEquipmentGrade: 4,
       beasts: [
-        _elite('Ashen Emperor', 51.54, 'qi'),
+        _elite('Ashen Emperor', 5, 1.45, 'qi'),
       ],
     ),
     WorldLocation(
@@ -369,7 +375,7 @@ class WorldCatalog {
       spiritStoneReward: 6000,
       maxEquipmentGrade: 4,
       beasts: [
-        _elite('Rift Stalker', 113.4, 'attack'),
+        _elite('Rift Stalker', 6, 1.45, 'attack'),
       ],
     ),
     WorldLocation(
@@ -388,7 +394,7 @@ class WorldCatalog {
       spiritStoneReward: 8000,
       maxEquipmentGrade: 4,
       beasts: [
-        _elite('Grotto Guardian Ape', 113.4, 'attack'),
+        _elite('Grotto Guardian Ape', 6, 1.45, 'attack'),
       ],
     ),
   ];

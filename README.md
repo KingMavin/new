@@ -65,6 +65,15 @@ backdrops (gradient art per location) rather than animations.
 - Race-gated combat moments: demons get Bloodline Frenzy, demi-humans get Beast Senses, humans get Formation Tactics as mid-fight choices
 - A new random event (The Beggar at the Shrine) feeds the hidden endings; some story choices leave permanent flags
 
+## Phase 10 — Balance pass, simulator & settings
+
+- New balance simulator (lib/game/engine/balance_simulator.dart) that audits the whole game: multiplier stacks layer by layer, time-to-ascension curves for fresh and fully-stacked builds, and win/die round math for every beast at three player profiles
+- Run it with `dart run tool/balance_sim.dart` for the full report; test/balance_simulator_test.dart enforces the invariants in CI
+- Combat scaling rebuilt: beasts previously grew at 2.2x per realm while player base stats grew at 2x, leaving late-realm zones mathematically unwinnable (defense above attack) until three stages in. Beasts are now difficulty-tuned per zone (0.9 to 1.55) on a 2x realm base, so every zone is winnable the moment you enter it, elite grounds demand in-realm progress, and a maxed build clears everything
+- Qi realm growth raised from 2x to 3.8x per realm: a fresh unbuffed climb to ascension drops from ~2,400 hours (100 days of pure idle) to ~23 hours with a smooth ramp where each realm takes ~1.7x the previous one; legacy multipliers then compress rebirth climbs fourteen-fold
+- Combat fundamentals unchanged (2x per realm) so the fight-by-fight difficulty bands above stay valid
+- Settings screen (gear icon on every tab): export your save as text (copy to clipboard), import a save by pasting it back, and an erase-and-restart danger zone
+
 ## Phase 9 — Powers, sect arts & changing blood
 
 - Special powers hidden in the wilds: six legendary powers (Ember of the Fallen Phoenix, Dragon-Scale Heart, Thunder Marrow, Void Insight, Moonveil Blessing, The Sage's Last Word) that can surface after any battle — far more often in raids, fallen cities, and faction halls
@@ -128,6 +137,6 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. Balance simulation and pass over the stacked multipliers; settings with save export/import
-2. More content inside existing systems: extra story chapters, events, regions, and hidden locations
-3. Local notifications, audio, optional background art packs; monetization scaffolding (opt-in rewarded ads, support/cosmetic purchases — never stat power)
+1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
+2. Local notifications, audio, optional background art packs
+3. Monetization scaffolding: opt-in rewarded ads and support/cosmetic purchases — never stat power

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/screens/settings_screen.dart';
 
 class AlchemyScreen extends StatefulWidget {
   final GameController controller;
@@ -46,7 +47,17 @@ class _AlchemyScreenState extends State<AlchemyScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Alchemy'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: 'Settings',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => SettingsScreen(controller: controller),
+                  ),
+                ),
+              ),
+            ],
           ),
           body: SafeArea(
             child: ListView(
