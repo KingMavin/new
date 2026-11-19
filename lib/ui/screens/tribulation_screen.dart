@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/tribulation_engine.dart';
+import 'package:immortal_path/game/models/narration.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 import 'package:immortal_path/game/util/format.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/state/game_controller.dart';
 
 class TribulationDialog extends StatelessWidget {
@@ -21,7 +23,12 @@ class TribulationDialog extends StatelessWidget {
           title: Text(
             outcome.success ? 'Tribulation Survived' : 'Tribulation Failed',
           ),
-          content: Text(outcome.message),
+          content: Text(
+            '${NarrationCatalog.caseLine(
+              outcome.success ? 'tribulation_survived' : 'tribulation_failed',
+              seed: controller.state.tribulationWavesCleared,
+            )}\n\n${outcome.message}',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -66,6 +73,7 @@ class TribulationDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
+                VoiceLine.screen('tribulation'),
                 Text(
                   'Wave ${state.tribulationWavesCleared + 1} of '
                   '${state.tribulationWavesTotal}',

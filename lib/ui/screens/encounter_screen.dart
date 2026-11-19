@@ -5,6 +5,7 @@ import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/theme/location_theme.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 
 class EncounterScreen extends StatefulWidget {
   final GameController controller;
@@ -36,6 +37,16 @@ class _EncounterScreenState extends State<EncounterScreen> {
   void _choose(int index) =>
       setState(() => widget.controller.chooseEncounterOption(index));
 
+  static String _caseKeyFor(EncounterKind kind, {required bool victory}) {
+    if (kind == EncounterKind.tournament) {
+      return victory ? 'tournament_victory' : 'tournament_defeat';
+    }
+    if (kind == EncounterKind.war) {
+      return victory ? 'war_victory' : 'war_defeat';
+    }
+    return victory ? 'hunt_victory' : 'hunt_defeat';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -47,6 +58,11 @@ class _EncounterScreenState extends State<EncounterScreen> {
         }
         final kind = widget.controller.encounterKind;
         final theme = themeForEncounter(kind, widget.location);
+        final caseKey = encounter.finished
+            ? (encounter.victory
+                ? _caseKeyFor(kind, victory: true)
+                : _caseKeyFor(kind, victory: false))
+            : null;
         final moment = encounter.pendingMoment;
         return Dialog.fullscreen(
           child: Column(
@@ -189,6 +205,7 @@ class _EncounterScreenState extends State<EncounterScreen> {
                       Navigator.of(context).pop();
                     },
                     summary: widget.controller.lastEncounterSummary,
+                    caseKey: caseKey,
                   ),
                 ),
               ),
@@ -206,6 +223,7 @@ class _ActionArea extends StatelessWidget {
   final void Function(int) onChoose;
   final VoidCallback onFinish;
   final String? summary;
+  final String? caseKey;
 
   const _ActionArea({
     required this.encounter,
@@ -213,7 +231,18 @@ class _ActionArea extends StatelessWidget {
     required this.onChoose,
     required this.onFinish,
     required this.summary,
+    this.caseKey,
   });
+
+  static String _caseKeyFor(EncounterKind kind, {required bool victory}) {
+    if (kind == EncounterKind.tournament) {
+      return victory ? 'tournament_victory' : 'tournament_defeat';
+    }
+    if (kind == EncounterKind.war) {
+      return victory ? 'war_victory' : 'war_defeat';
+    }
+    return victory ? 'hunt_victory' : 'hunt_defeat';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +266,10 @@ class _ActionArea extends StatelessWidget {
           if (summary != null) ...[
             const SizedBox(height: 8),
             Text(summary!),
+          ],
+          if (caseKey != null) ...[
+            const SizedBox(height: 8),
+            VoiceLine.caseOf(caseKey!, seed: summary?.length ?? 0),
           ],
           const SizedBox(height: 12),
           FilledButton(
@@ -283,6 +316,16 @@ class _HpBar extends StatelessWidget {
     required this.color,
     required this.value,
   });
+
+  static String _caseKeyFor(EncounterKind kind, {required bool victory}) {
+    if (kind == EncounterKind.tournament) {
+      return victory ? 'tournament_victory' : 'tournament_defeat';
+    }
+    if (kind == EncounterKind.war) {
+      return victory ? 'war_victory' : 'war_defeat';
+    }
+    return victory ? 'hunt_victory' : 'hunt_defeat';
+  }
 
   @override
   Widget build(BuildContext context) {

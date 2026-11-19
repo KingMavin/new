@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/store_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 
@@ -144,9 +145,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 8),
+          VoiceLine.screen('settings'),
+          const SizedBox(height: 8),
           const Center(
             child: Text(
-              'Version 0.18.0 \u2014 the mortal becomes immortal',
+              'Version 0.19.0 \u2014 the mortal becomes immortal',
               style: TextStyle(fontSize: 12),
             ),
           ),

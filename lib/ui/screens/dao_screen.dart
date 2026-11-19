@@ -12,6 +12,7 @@ import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/technique.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
@@ -57,6 +58,7 @@ class DaoScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                VoiceLine.screen('dao'),
                 if (state.tribulationActive)
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,

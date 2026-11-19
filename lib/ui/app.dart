@@ -5,6 +5,7 @@ import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/sect_npc.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/world_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
 import 'package:immortal_path/ui/screens/dao_screen.dart';
@@ -163,6 +164,10 @@ class _MainShellState extends State<MainShell> {
                 Text(
                   '\u2014 ${master.name}, ${master.title}',
                   style: Theme.of(context).textTheme.bodySmall,
+                ),
+                VoiceLine.caseOf(
+                  'promotion',
+                  seed: rank * 7 + controller.state.journal.length,
                 ),
               ],
             ),

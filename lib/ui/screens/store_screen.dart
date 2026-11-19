@@ -5,6 +5,7 @@ import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -35,6 +36,7 @@ class _StoreScreenState extends State<StoreScreen> {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              VoiceLine.screen('store'),
               if (!widget.controller.monetizationConfigured)
                 Card(
                   child: const ListTile(

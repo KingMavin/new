@@ -17,6 +17,7 @@ import 'package:immortal_path/ui/screens/sect_store_screen.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 
 class SectScreen extends StatelessWidget {
   final GameController controller;
@@ -151,6 +152,7 @@ class SectScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                VoiceLine.screen('sect'),
                 if (sect == null) ...[
                   _TaskBoardCard(controller: controller),
                   const SizedBox(height: 16),

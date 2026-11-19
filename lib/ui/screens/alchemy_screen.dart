@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immortal_path/game/engine/alchemy_engine.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 
@@ -66,6 +67,7 @@ class _AlchemyScreenState extends State<AlchemyScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                VoiceLine.screen('alchemy'),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),

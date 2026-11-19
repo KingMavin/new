@@ -6,11 +6,13 @@ import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/monetization.dart';
+import 'package:immortal_path/game/models/narration.dart';
 import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/story.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/onboarding_screen.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/tribulation_screen.dart';
@@ -96,6 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               Text(ending.epilogue),
+              const SizedBox(height: 12),
+              VoiceLine.caseOf('ascension', seed: endingId.length),
               const SizedBox(height: 8),
               Text(
                 'This ending is recorded in your legend and will persist '
@@ -200,8 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(result.message),
-        duration: const Duration(seconds: 3),
+        content: Text(
+          '${NarrationCatalog.caseLine('breakthrough_failure',
+              seed: widget.controller.state.journal.length)}\n'
+          '\n${result.message}',
+        ),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -240,7 +248,8 @@ class _HomeScreenState extends State<HomeScreen> {
           body: SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(16),
-              children: [
+            children: [
+              VoiceLine.screen('home'),
                 if (activeBoosts.isNotEmpty)
                   Wrap(
                     spacing: 8,
@@ -787,7 +796,9 @@ class _ReincarnationCard extends StatelessWidget {
           'morning mist. In return your soul will crystallize into '
           '$gain soul power.\n\n'
           'Kept: half your spirit stones, discovered techniques, your '
-          'companion, your codex, and all soul upgrades.',
+          'companion, your codex, and all soul upgrades.\n\n'
+          '${NarrationCatalog.caseLine('reincarnation',
+              seed: state.reincarnations)}',
         ),
         actions: [
           TextButton(
@@ -972,7 +983,13 @@ class _BreakthroughCeremony extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
+                  VoiceLine.caseOf(
+                    'breakthrough_success',
+                    seed: message.length,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('Continue'),

@@ -4,12 +4,14 @@ import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/monetization.dart';
+import 'package:immortal_path/game/models/narration.dart';
 import 'package:immortal_path/game/models/sect_store.dart';
 import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/models/forge.dart';
 import 'package:immortal_path/game/engine/forge_engine.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/store_screen.dart';
 import 'package:immortal_path/ui/theme/backdrops.dart';
 
@@ -35,6 +37,7 @@ class SectStoreScreen extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              VoiceLine.screen('sect_store'),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.account_balance),
@@ -139,11 +142,17 @@ class SectStoreScreen extends StatelessWidget {
 
   void _forge(BuildContext context, ForgeRecipe recipe) {
     final outcome = controller.attemptForge(recipe.id);
+    final voice = NarrationCatalog.caseLine(
+      outcome?.success ?? false ? 'forge_success' : 'forge_failure',
+      seed: outcome?.message.length ?? 0,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          outcome?.message ?? 'The forge does not accept the offering.',
+          '${voice}\n\n'
+          '${outcome?.message ?? 'The forge does not accept the offering.'}',
         ),
+        duration: const Duration(seconds: 4),
       ),
     );
   }

@@ -221,6 +221,30 @@ are shown on every join card and the sect status card, and are covered by
 `test/sect_perks_test.dart`. A sect's perk and axis align with its doctrine, so
 choosing a hall is choosing a playstyle, not a math ranking.
 
+## Phase 19 — A dialogue for every screen, case and act
+
+The world now has a narrator. `NarrationCatalog` holds a cast of in-world
+voices — hand-written xianxia-flavored lines — surfaced by a small
+`VoiceLine` widget, so no screen or outcome moment is wordless:
+
+- **Every screen speaks** — the home courtyard, the world map, the furnace
+  hall, the dao tablet, the tribulation sky, the Temple of Support, the sect
+  armory and even the settings registry each carry 3–4 rotating lines picked
+  deterministically for the day, so they change daily but never flicker
+  between rebuilds
+- **Every case has a line** — breakthrough success and failure, tribulation
+  survived and failed, tournament victory and defeat, war victory and defeat,
+  hunt victory and defeat, forge success and failure, rank promotions, the
+  reincarnation confirm dialog, and the ascension ending all open with a
+  narrator line tailored to what just happened (15 contexts × 3 lines)
+- **Acts stay as they were** — the nine story chapters per race already
+  carry full narration plus choice moments, so the narrator layer covers the
+  space between acts, not instead of them
+- **Deterministic, testable, data-only** — lines are pure static data with
+  a seeded picker; `test/narration_test.dart` guarantees every screen key and
+  case key exists, every context has its lines, nothing is empty or duplicated,
+  and unknown keys fall back to silence instead of crashing
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:

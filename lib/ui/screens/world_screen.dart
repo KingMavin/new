@@ -7,6 +7,7 @@ import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/voice_line.dart';
 import 'package:immortal_path/ui/screens/settings_screen.dart';
 import 'package:immortal_path/ui/screens/encounter_screen.dart';
 import 'package:immortal_path/ui/theme/location_theme.dart';
@@ -69,6 +70,7 @@ class WorldScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                VoiceLine.screen('world'),
                 _ActiveLocationCard(
                   location: active,
                   theme: theme,

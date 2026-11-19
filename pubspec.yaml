@@ -1,7 +1,7 @@
 name: immortal_path
 description: A single-player idle cultivation RPG inspired by xianxia mythology.
 publish_to: "none"
-version: 0.18.0
+version: 0.19.0
 
 environment:
   sdk: ^3.5.0
