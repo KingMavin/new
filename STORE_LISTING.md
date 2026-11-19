@@ -26,10 +26,12 @@ Verdant Empire, sink your roots into the Great Dao, and climb the nine
 realms toward ascension — one breath of qi at a time, even while you're away
 from your phone.
 
-⚔️ **Hunt, delve, war** — Nine wild regions roam with spirit beasts. Fight
-with auto-battle combat livened by narrated choice moments. Enter sect
-tournaments and wage faction wars where both armies' strength decides the
-clash.
+⚔️ **Hunt, delve, war** — Nine wild regions roam with spirit beasts. Every
+fight is a narrated encounter with choice moments your stats unlock — costs
+and risks shown before you commit. Enter sect tournaments and wage faction
+wars where both armies' strength decides the clash. Every choice leaves a
+trace: boons and banes called Marks of the Path that shape this life and
+its ending.
 
 🧪 **Alchemy & the Forge** — Brew qi, foundation, and longevity pills from
 herbs and cores. Forge weapons, armor, and talismans with spirit stones —
@@ -44,13 +46,17 @@ game-over.
 wilds. Switch bloodline through the Faceless Messenger. Reincarnate with
 soul power to climb again faster, carrying your legacy forward.
 
-🏯 **Sects & disciples** — Swear into one of three sects, earn contribution,
+🏯 **Sects & disciples** — Nine sects, three per faction, each with its own
+doctrine and hall of living characters — no ranking above the other, only
+different roads. Earn contribution, climb from Outer Disciple to Elder,
 deepen technique mastery with every victory, and sign the daily sect ledger
-for an omen and a tithe.
+for an omen and a tithe. Or walk the errant road unsworn, if strength is
+your only banner.
 
-🌄 **A world to remember you** — 17 explorable locations, hidden realms and
-fallen cities, faction reputations from Stranger to Beloved of the Heavens,
-and 27 achievements chronicling your deeds.
+🌄 **A world to remember you** — 18 explorable locations, hidden realms and
+fallen cities, 15 story events with painted art, faction reputations from
+Stranger to Beloved of the Heavens, and 27 achievements chronicling your
+deeds.
 
 🔇 **Plays offline. No account. No tracking.** Optional support items
 simulated in this build — never needed to finish the path.
