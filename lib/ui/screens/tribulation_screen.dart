@@ -83,6 +83,11 @@ class TribulationDialog extends StatelessWidget {
                   '${formatNumber(state.tribulationMaxHp)} tribulation health',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  'Your qi: ${formatNumber(state.qi)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 120,

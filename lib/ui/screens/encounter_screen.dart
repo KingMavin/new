@@ -84,6 +84,7 @@ class _EncounterScreenState extends State<EncounterScreen> {
                             IconButton(
                               icon: const Icon(Icons.close),
                               color: Colors.white,
+                              tooltip: 'Withdraw from this fight',
                               onPressed: () {
                                 widget.controller.clearEncounter();
                                 Navigator.of(context).pop();

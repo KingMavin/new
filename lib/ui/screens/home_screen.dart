@@ -5,6 +5,7 @@ import 'package:immortal_path/game/engine/ending_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/race.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/story.dart';
@@ -256,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             size: 16,
                           ),
                           label: Text(
-                            '${boost.kind} '
+                            '${_boostLabel(boost)} '
                                 '\u00d7${boost.multiplier.toStringAsFixed(1)}'
                                 ' \u00b7 '
                                 '${formatDuration(boost.expiresAt.difference(DateTime.now()))}'
@@ -363,6 +364,17 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  String _boostLabel(ActiveBoost boost) {
+    switch (boost.kind) {
+      case 'qi':
+        return 'Qi incense';
+      case 'stones':
+        return 'Stone favor';
+      default:
+        return 'Blessing';
+    }
   }
 
   String _nextGoalLabel(GameState state) {

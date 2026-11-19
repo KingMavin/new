@@ -295,6 +295,20 @@ void main() {
       expect(blocked.message, contains('lack'));
     });
 
+    test('every event keeps at least one free choice', () {
+      for (final event in EventEngine.catalog) {
+        final hasFree = event.choices.any(
+          (c) =>
+              c.stonesCostFactor == 0 &&
+              c.stonesFlatCost == 0 &&
+              c.herbCost == 0 &&
+              c.coreCost == 0 &&
+              c.cores >= 0,
+        );
+        expect(hasFree, isTrue, reason: '${event.id} dead-ends the dialog');
+      }
+    });
+
     test('wild garden harvest grants exactly three herbs', () {
       final state = stateAt(spiritHerbs: 1);
       final outcome = EventEngine.resolve(state, 'wild_garden', 0, location)!;

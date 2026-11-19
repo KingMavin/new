@@ -104,6 +104,7 @@ class EventEngine {
           herbs: 5,
         ),
         EventChoice(label: 'Sell a beast core', cores: -1, stonesFactor: 1.5),
+        EventChoice(label: 'Trade words, not wares', qiMinutes: 5),
       ],
     ),
     GameEvent(
