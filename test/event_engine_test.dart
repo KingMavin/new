@@ -337,6 +337,44 @@ void main() {
       expect(outcome.message, contains('strike your name'));
     });
 
+    test('thunder cave gamble leaves a mark on both dice', () {
+      final state = stateAt().copyWith(raceId: 'human');
+      final won = EventEngine.resolve(
+        state,
+        'thunder_cave',
+        0,
+        location,
+        roll: 0.01,
+      )!;
+      expect(won.state.consequences, contains('stormtouched'));
+      expect(won.message, contains('a mark binds'));
+
+      final lost = EventEngine.resolve(
+        state,
+        'thunder_cave',
+        0,
+        location,
+        roll: 0.99,
+      )!;
+      expect(lost.state.consequences, contains('frightened'));
+      expect(lost.message, contains('a mark scars'));
+    });
+
+    test('marks never repeat \u2014 deflection does not stack the same mark', () {
+      final state = stateAt().copyWith(
+        raceId: 'human',
+        consequences: const ['frightened'],
+      );
+      final outcome = EventEngine.resolve(
+        state,
+        'thunder_cave',
+        0,
+        location,
+        roll: 0.99,
+      )!;
+      expect(outcome.state.consequences.where((c) => c == 'frightened'), hasLength(1));
+    });
+
     test('reforging keeps a sect of the new faction relationship intact', () {
       final state = stateAt(spiritStones: 9000).copyWith(
         raceId: 'demon',

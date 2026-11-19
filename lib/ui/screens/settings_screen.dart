@@ -140,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text('Immortal Path'),
               subtitle: Text(
                 'A single-player idle cultivation RPG. Nine realms, three '
-                'peoples, three paths, six endings. The wheel turns.',
+                'peoples, three paths, seven endings. The wheel turns.',
               ),
             ),
           ),
@@ -149,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           const Center(
             child: Text(
-              'Version 0.19.1 \u2014 the mortal becomes immortal',
+              'Version 0.20.0 \u2014 the mortal becomes immortal',
               style: TextStyle(fontSize: 12),
             ),
           ),

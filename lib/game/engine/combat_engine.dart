@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:immortal_path/game/engine/consequence_engine.dart';
 
 import 'package:immortal_path/game/engine/boost_engine.dart';
 import 'package:immortal_path/game/engine/mastery_engine.dart';
@@ -79,7 +80,8 @@ class CombatEngine {
             RaceEngine.attackMultiplier(state) *
             (1.0 + StoryEngine.attackBonus(state)) *
             (1.0 + PowerEngine.attackBonus(state)) *
-            (1.0 + MasteryEngine.bonus(state)) +
+            (1.0 + MasteryEngine.bonus(state)) *
+            ConsequenceEngine.attackFactor(state) +
         (state.weapon?.power ?? 0) +
         (state.amulet?.power ?? 0) * 0.5;
   }
@@ -92,7 +94,8 @@ class CombatEngine {
             technique.defenseMultiplier *
             (1.0 + SoulEngine.defenseBonus(state)) *
             RaceEngine.defenseMultiplier(state) *
-            (1.0 + PowerEngine.defenseBonus(state)) +
+            (1.0 + PowerEngine.defenseBonus(state)) *
+            ConsequenceEngine.defenseFactor(state) +
         (state.armor?.power ?? 0) +
         (state.amulet?.power ?? 0) * 0.5;
   }
@@ -105,8 +108,8 @@ class CombatEngine {
         technique.hpMultiplier *
         (1.0 + SoulEngine.hpBonus(state)) *
         RaceEngine.hpMultiplier(state) *
-        (1.0 + PowerEngine.hpBonus(state));
-  }
+        (1.0 + PowerEngine.hpBonus(state)) *
+        ConsequenceEngine.hpFactor(state);  }
 
   static bool isLocationUnlocked(GameState state, WorldLocation location) {
     if (state.realmIndex < location.requiredRealm) return false;
@@ -133,6 +136,7 @@ class CombatEngine {
         (1.0 + StoryEngine.stoneBonus(state)) *
         (1.0 + PowerEngine.stoneBonus(state)) *
         (1.0 + SectEngine.lootStonesBonus(state)) *
+        ConsequenceEngine.stonesFactor(state) *
         BoostEngine.multiplierFor(state, 'stones');
     var herbs = 0;
     var cores = 0;

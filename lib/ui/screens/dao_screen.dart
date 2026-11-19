@@ -8,6 +8,7 @@ import 'package:immortal_path/game/models/companion.dart';
 import 'package:immortal_path/game/models/power.dart';
 import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/consequence.dart';
 import 'package:immortal_path/game/models/soul_upgrade.dart';
 import 'package:immortal_path/game/models/technique.dart';
 import 'package:immortal_path/game/models/world_location.dart';
@@ -164,6 +165,13 @@ class DaoScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                const SizedBox(height: 16),
+                Text(
+                  'Marks of the Path',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                _MarksCard(state: state),
                 const SizedBox(height: 16),
                 Text(
                   'Codex \u00b7 Beasts Slain',
@@ -364,6 +372,51 @@ class _PowerCard extends StatelessWidget {
         ),
         isThreeLine: true,
         trailing: discovered ? const Chip(label: Text('Ingrained')) : null,
+      ),
+    );
+  }
+}
+
+class _MarksCard extends StatelessWidget {
+  final GameState state;
+
+  const _MarksCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final marks = [
+      for (final id in state.consequences) ConsequenceCatalog.byId(id),
+    ].whereType<GameConsequence>().toList();
+    if (marks.isEmpty) {
+      return const Card(
+        child: ListTile(
+          leading: Icon(Icons.fingerprint),
+          title: Text('Unmarked'),
+          subtitle: Text(
+            'The world has not written on you yet. Choices in fights, wars '
+            'and roadside events leave lasting marks \u2014 boons and banes '
+            'that hold until the wheel washes them away.',
+          ),
+          isThreeLine: true,
+        ),
+      );
+    }
+    return Card(
+      child: Column(
+        children: [
+          for (final mark in marks)
+            ListTile(
+              leading: Icon(
+                mark.boon ? Icons.auto_awesome : Icons.healing,
+                color: mark.boon
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
+              ),
+              title: Text('${mark.title} \u00b7 ${mark.boon ? 'boon' : 'bane'}'),
+              subtitle: Text(mark.description),
+              isThreeLine: true,
+            ),
+        ],
       ),
     );
   }

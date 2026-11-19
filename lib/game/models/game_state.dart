@@ -3,6 +3,7 @@ import 'disciple.dart';
 import 'equipment.dart';
 import 'journal.dart';
 import 'sect_task.dart';
+import 'consequence.dart';
 import 'monetization.dart';
 import 'realm_ladder.dart';
 
@@ -86,6 +87,7 @@ class GameState {
   final List<ActiveTask> sectTasks;
   final List<String> sectBetrayed;
   final int sectRankAchieved;
+  final List<String> consequences;
 
   const GameState({
     required this.realmIndex,
@@ -165,6 +167,7 @@ class GameState {
     this.sectTasks = const [],
     this.sectBetrayed = const [],
     this.sectRankAchieved = 0,
+    this.consequences = const [],
   });
 
   factory GameState.initial() => GameState(
@@ -296,6 +299,7 @@ class GameState {
     List<ActiveTask>? sectTasks,
     List<String>? sectBetrayed,
     int? sectRankAchieved,
+    List<String>? consequences,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -393,11 +397,12 @@ class GameState {
       sectTasks: sectTasks ?? this.sectTasks,
       sectBetrayed: sectBetrayed ?? this.sectBetrayed,
       sectRankAchieved: sectRankAchieved ?? this.sectRankAchieved,
+      consequences: consequences ?? this.consequences,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 13,
+        'version': 14,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -475,6 +480,7 @@ class GameState {
         'sectTasks': sectTasks.map((task) => task.toJson()).toList(),
         'sectBetrayed': sectBetrayed,
         'sectRankAchieved': sectRankAchieved,
+        'consequences': consequences,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -625,5 +631,8 @@ class GameState {
             .map((id) => id as String)
             .toList(),
         sectRankAchieved: json['sectRankAchieved'] as int? ?? 0,
+        consequences: (json['consequences'] as List<dynamic>? ?? const [])
+            .map((id) => id as String)
+            .toList(),
       );
 }

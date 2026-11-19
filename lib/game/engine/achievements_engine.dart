@@ -163,8 +163,14 @@ class AchievementsEngine {
     Achievement(
       id: 'six_paths',
       title: 'Six Paths Walked',
-      description: 'Reach all six endings.',
+      description: 'Reach 6 different endings.',
       check: (s) => s.achievedEndings.length >= 6,
+    ),
+    Achievement(
+      id: 'marked_soul',
+      title: 'Marked Soul',
+      description: 'Carry 3 lasting marks of the path at once.',
+      check: (s) => s.consequences.length >= 3,
     ),
     Achievement(
       id: 'patron_legend',

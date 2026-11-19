@@ -78,6 +78,19 @@ class EndingEngine {
           'know what chose to stay.',
     ),
     GameEnding(
+      id: 'hidden_scars',
+      title: 'The Unbowed',
+      hidden: true,
+      epilogue:
+          'You came to the gate carrying every mark the road gave you \u2014 '
+          'the scars, the whispers, the withered palm folded into your '
+          'sleeve. Heaven looks at the ledger of your life and finds it '
+          'stained and glorious all the way down. You are not admitted to '
+          'the celestial rolls; they are not clean enough. You are welcomed '
+          'beyond them instead, as the first of a new register: the unbowed, '
+          'who climbed exactly as wounded as they were.',
+    ),
+    GameEnding(
       id: 'hidden_wheel',
       title: 'The Wheel Unbound',
       hidden: true,
@@ -106,11 +119,13 @@ class EndingEngine {
     required int battlesLost,
     required List<String> storyFlags,
     required Map<String, int> pathPoints,
+    required int lastingMarks,
   }) {
     if (!ascended) return null;
     if (tribulationsFailed >= 3) return 'hidden_ninth';
     if (storyFlags.contains('gave_everything')) return 'hidden_nameless';
     if (reincarnations >= 3 && battlesLost == 0) return 'hidden_wheel';
+    if (lastingMarks >= 3) return 'hidden_scars';
     String? best;
     var bestValue = 0;
     for (final entry in pathPoints.entries) {
@@ -129,5 +144,6 @@ class EndingEngine {
         battlesLost: state.battlesLost,
         storyFlags: state.storyFlags,
         pathPoints: state.pathPoints,
+        lastingMarks: state.consequences.length,
       );
 }

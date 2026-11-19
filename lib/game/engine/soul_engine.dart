@@ -105,6 +105,7 @@ class SoulEngine {
       sectTasks: const [],
       sectBetrayed: const [],
       sectRankAchieved: 0,
+      consequences: const [],
       disciples: const [],
       missionLog: const [],
       bestiary: state.bestiary,

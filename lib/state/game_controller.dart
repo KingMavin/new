@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:immortal_path/game/engine/consequence_engine.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -542,16 +543,45 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       lastTournamentAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
+    final journalLines = <String>[];
+    var markLine = '';
+    if (!won) {
+      final markLines = <String>[];
+      final marked = ConsequenceEngine.grant(
+        _state,
+        'humiliated',
+        markLines,
+      );
+      if (marked != null) {
+        _state = marked;
+        markLine = '\nMark scarred: Humiliated (qi rate -3% this life)';
+        journalLines.add('Mark scarred at the arena — Humiliated.');
+      }
+    } else if (finished.playerHp <=
+        CombatEngine.playerMaxHp(_state) * 0.25) {
+      final markLines = <String>[];
+      final marked = ConsequenceEngine.grant(
+        _state,
+        'iron_will',
+        markLines,
+      );
+      if (marked != null) {
+        _state = marked;
+        markLine = '\nMark earned: Iron Will (+5% attack & defense)';
+        journalLines.add('Mark earned at the arena — Iron Will.');
+      }
+    }
     _state = SectTaskEngine.recordProgress(_state, 'tournament_fight');
     _checkImmortalization();
+    journalLines.add(
+      won
+          ? 'Won a sect tournament: +${formatNumber(stones)} stones, '
+              '+$contribution contribution.'
+          : 'Fell in a sect tournament: +$contribution '
+              'contribution for standing tall.',
+    );
     _settle(
-      journal: [
-        won
-            ? 'Won a sect tournament: +${formatNumber(stones)} stones, '
-                '+$contribution contribution.'
-            : 'Fell in a sect tournament: +$contribution '
-                'contribution for standing tall.',
-      ],
+      journal: journalLines,
       sound: won ? SoundEffect.battleWon : null,
     );
     final eventId = EventEngine.maybeTrigger(_state, rng: _rng);
@@ -561,10 +591,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _lastEncounterSummary = won
         ? '${TournamentEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
-            'contribution, +$reputation reputation'
+            'contribution, +$reputation reputation$markLine'
         : '${TournamentEngine.defeatText}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
-            'contribution, +$reputation reputation';
+            'contribution, +$reputation reputation$markLine';
     _encounter = finished;
     notifyListeners();
     save();
@@ -586,17 +616,46 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       lastWarAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
+    final journalLines = <String>[];
+    var markLine = '';
+    if (!won) {
+      final markLines = <String>[];
+      final marked = ConsequenceEngine.grant(
+        _state,
+        'cursed_wounds',
+        markLines,
+      );
+      if (marked != null) {
+        _state = marked;
+        markLine = '\nMark scarred: Cursed Wounds (defense -8% this life)';
+        journalLines.add('Mark scarred on the field — Cursed Wounds.');
+      }
+    } else if (finished.playerHp <=
+        CombatEngine.playerMaxHp(_state) * 0.25) {
+      final markLines = <String>[];
+      final marked = ConsequenceEngine.grant(
+        _state,
+        'iron_will',
+        markLines,
+      );
+      if (marked != null) {
+        _state = marked;
+        markLine = '\nMark earned: Iron Will (+5% attack & defense)';
+        journalLines.add('Mark earned on the field — Iron Will.');
+      }
+    }
     _state = SectTaskEngine.recordProgress(_state, 'war_serve');
     _checkImmortalization();
+    journalLines.add(
+      won
+          ? 'Carried the war banner to victory: '
+              '+${formatNumber(stones)} stones, +$contribution '
+              'contribution.'
+          : 'Held the war line: +$contribution contribution, '
+              '+$reputation reputation.',
+    );
     _settle(
-      journal: [
-        won
-            ? 'Carried the war banner to victory: '
-                '+${formatNumber(stones)} stones, +$contribution '
-                'contribution.'
-            : 'Held the war line: +$contribution contribution, '
-                '+$reputation reputation.',
-      ],
+      journal: journalLines,
       sound: won ? SoundEffect.battleWon : null,
     );
     final warEventId = EventEngine.maybeTrigger(_state, rng: _rng);
@@ -606,10 +665,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _lastEncounterSummary = won
         ? '${WarEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
-            'contribution, +$reputation reputation'
+            'contribution, +$reputation reputation$markLine'
         : '${WarEngine.defeatText}\n\n'
             '+$contribution contribution, +$reputation reputation '
-            'for holding the line';
+            'for holding the line$markLine';
     _encounter = finished;
     notifyListeners();
     save();
@@ -674,6 +733,14 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       );
     }
 
+    if (finished.playerHp <= CombatEngine.playerMaxHp(updated) * 0.25) {
+      final marked = ConsequenceEngine.grant(updated, 'iron_will', journalLines);
+      if (marked != null) {
+        updated = marked;
+        lines.add('Mark earned: Iron Will (+5% attack & defense)');
+      }
+    }
+
     _lastEncounterSummary = lines.isEmpty ? 'Nothing gained.' : lines.join('\n');
 
     final eventId = EventEngine.maybeTrigger(updated, rng: _rng);
@@ -726,13 +793,20 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
     _state = _state.copyWith(battlesLost: _state.battlesLost + 1);
-    _settle(
-      journal: [
-        'Was defeated by ${finished.beast.name} \u2014 the loss is recorded.',
-      ],
-    );
+    final journalLines = <String>[
+      'Was defeated by ${finished.beast.name} \u2014 the loss is recorded.',
+    ];
+    var markLine = '';
+    if (_rng.nextDouble() < 0.5) {
+      final marked = ConsequenceEngine.grant(_state, 'scarred', journalLines);
+      if (marked != null) {
+        _state = marked;
+        markLine = '\nMark scarred: Scarred (max hp -10% this life)';
+      }
+    }
+    _settle(journal: journalLines);
     _lastEncounterSummary =
-        '${finished.beast.name} proved stronger this day.';
+        '${finished.beast.name} proved stronger this day.$markLine';
     _encounter = finished;
     notifyListeners();
     save();

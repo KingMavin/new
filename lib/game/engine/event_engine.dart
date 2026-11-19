@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:immortal_path/game/engine/consequence_engine.dart';
+import 'package:immortal_path/game/models/consequence.dart';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
@@ -21,6 +23,8 @@ class EventChoice {
   final String? flag;
   final double stonesFlatCost;
   final String? raceChangeTo;
+  final String? consequenceId;
+  final String? failConsequenceId;
 
   const EventChoice({
     required this.label,
@@ -37,6 +41,8 @@ class EventChoice {
     this.flag,
     this.stonesFlatCost = 0,
     this.raceChangeTo,
+    this.consequenceId,
+    this.failConsequenceId,
   });
 }
 
@@ -177,6 +183,8 @@ class EventEngine {
           label: 'Pry loose a scale',
           cores: 2,
           gamble: true,
+          consequenceId: 'dragons_blood',
+          failConsequenceId: 'withered_palm',
         ),
       ],
     ),
@@ -223,6 +231,8 @@ class EventEngine {
           qiMinutes: 45,
           stonesFactor: 1,
           gamble: true,
+          consequenceId: 'stormtouched',
+          failConsequenceId: 'frightened',
         ),
         EventChoice(label: 'Rest at the entrance', qiMinutes: 15),
       ],
@@ -445,6 +455,35 @@ class EventEngine {
                 ? 'Demon'
                 : 'Demi-human'}; your old people brand you a traitor',
       );
+    }
+
+    if (success && choice.consequenceId != null) {
+      final marked = ConsequenceEngine.grant(
+        updated,
+        choice.consequenceId!,
+        <String>[],
+      );
+      if (marked != null) {
+        updated = marked;
+        parts.add(
+          'a mark binds to you \u2014 '
+          '${ConsequenceCatalog.byId(choice.consequenceId!)!.title}',
+        );
+      }
+    }
+    if (!success && choice.failConsequenceId != null) {
+      final marked = ConsequenceEngine.grant(
+        updated,
+        choice.failConsequenceId!,
+        <String>[],
+      );
+      if (marked != null) {
+        updated = marked;
+        parts.add(
+          'a mark scars you \u2014 '
+          '${ConsequenceCatalog.byId(choice.failConsequenceId!)!.title}',
+        );
+      }
     }
 
     final prefix = success

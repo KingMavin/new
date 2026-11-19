@@ -551,5 +551,25 @@ void main() {
       expect(parsed.sectTasks.first.progress, 3);
       expect(parsed.sectTasks.first.complete, isFalse);
     });
+
+    test('json roundtrip preserves sustained marks', () {
+      final state = GameState.initial().copyWith(
+        consequences: const ['iron_will', 'scarred', 'stormtouched'],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.consequences, ['iron_will', 'scarred', 'stormtouched']);
+    });
+
+    test('version 13 saves load with phase 21 mark defaults', () {
+      final legacy = {
+        'version': 13,
+        'realmIndex': 2,
+        'stageIndex': 1,
+        'sectRankAchieved': 1,
+      };
+      final parsed = GameState.fromJson(legacy);
+      expect(parsed.consequences, isEmpty);
+      expect(parsed.sectRankAchieved, 1);
+    });
   });
 }

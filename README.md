@@ -280,6 +280,36 @@ verified clean.
   saves in any schema from v1 still load
 - Version 0.19.1; syntax scanner clean across all 101 Dart files
 
+## Phase 21 — Marks of the Path: every choice pays, now and later
+
+Choices no longer resolve into a one-line reward. A lasting consequence
+system — the **Marks of the Path** — lets any decisive moment bind a
+boon or a bane to the cultivator that holds until the wheel of
+reincarnation washes the slate:
+
+- **Earned in the field** — win any tournament, war or hunt while fighting
+  on under a quarter of your health and the crowd's roar forges
+  **Iron Will** (+5% attack & defense this life). Fall in a hunt and the
+  beast may leave you **Scarred** (−10% max hp). Lose a tournament and the
+  arena's whispers cost you **Humiliated** (−3% qi rate); lose a war and
+  **Cursed Wounds** slow every parry (−8% defense)
+- **Gambles now have weight** — training in the Thunder Cave binds
+  **Stormtouched** (+8% qi rate) on success or **Thunder-Shy** (−6% qi
+  rate) on failure; prying a dragon scale grants **Dragon's Blood** (+5% hp
+  & attack) or a **Withered Palm** (−6% attack). Event choice cards show
+  the stakes — 'success marks you forever' / 'failure scars you forever'
+- **Marks display on the Dao screen** in a Marks of the Path card with each
+  mark's story and stat line, and every grant is journaled to the chronicle
+- **A seventh ending** — **The Unbowed** (hidden): ascend while carrying
+  three or more marks and heaven welcomes the scarred climber as the first
+  of a new register. The 'Marked Soul' achievement celebrates the same
+- **Balance rule preserved** — marks are never account-breaking: the worst
+  bane (−10% hp) is milder than one realm's growth, and the wheel cleanses
+  all marks on reincarnation, so a scarred legacy only shapes this life
+- Save schema v14 (marks serialized, old saves load clean); 104 Dart files,
+  scanner clean; new `consequence_engine_test.dart` plus mark coverage in
+  the ending, event and game-state suites. Version 0.20.0
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:

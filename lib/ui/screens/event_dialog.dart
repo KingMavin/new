@@ -58,6 +58,14 @@ class EventDialog extends StatelessWidget {
     if (choice.raceChangeTo != null) {
       parts.add('reforges your bloodline');
     }
+    if (choice.consequenceId != null &&
+        !state.consequences.contains(choice.consequenceId)) {
+      parts.add('success marks you forever');
+    }
+    if (choice.failConsequenceId != null &&
+        !state.consequences.contains(choice.failConsequenceId)) {
+      parts.add('failure scars you forever');
+    }
     if (parts.isEmpty) return 'a freely given kindness';
     return parts.join(' \u00b7 ');
   }

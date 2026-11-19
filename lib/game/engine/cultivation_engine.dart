@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:immortal_path/game/engine/consequence_engine.dart';
 
 import 'package:immortal_path/game/engine/boost_engine.dart';
 import 'package:immortal_path/game/engine/power_engine.dart';
@@ -65,7 +66,8 @@ class CultivationEngine {
         RaceEngine.qiMultiplier(state) *
         (1.0 + PowerEngine.qiBonus(state)) *
         (1.0 + ReputationEngine.standingBonus(state)) *
-        BoostEngine.multiplierFor(state, 'qi');
+        BoostEngine.multiplierFor(state, 'qi') *
+        ConsequenceEngine.qiFactor(state);
   }
 
   static double qiToNextStage(GameState state) =>

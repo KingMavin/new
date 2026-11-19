@@ -5,9 +5,9 @@ import 'package:immortal_path/game/models/game_state.dart';
 
 void main() {
   group('EndingEngine', () {
-    test('catalog has three main and three hidden endings', () {
+    test('catalog has three main and four hidden endings', () {
       expect(endingIds(false).length, 3);
-      expect(endingIds(true).length, 3);
+      expect(endingIds(true).length, 4);
       for (final ending in EndingEngine.endings) {
         expect(ending.epilogue, isNotEmpty, reason: ending.id);
         expect(EndingEngine.byId(ending.id), same(ending));
@@ -46,6 +46,19 @@ void main() {
       expect(EndingEngine.evaluateState(wheel), 'hidden_wheel');
       expect(
         EndingEngine.evaluateState(wheel.copyWith(battlesLost: 1)),
+        'main_wild',
+      );
+
+      final unbowed = GameState.initial().copyWith(
+        ascended: true,
+        pathPoints: const {'wild': 10},
+        consequences: const ['scarred', 'humiliated', 'cursed_wounds'],
+      );
+      expect(EndingEngine.evaluateState(unbowed), 'hidden_scars');
+      expect(
+        EndingEngine.evaluateState(
+          unbowed.copyWith(consequences: const ['scarred', 'humiliated']),
+        ),
         'main_wild',
       );
     });
