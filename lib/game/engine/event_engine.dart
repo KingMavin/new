@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:immortal_path/game/engine/cultivation_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/sect.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 import 'package:immortal_path/game/util/format.dart';
 
@@ -416,6 +417,26 @@ class EventEngine {
         reputation: reputation,
         storyChapter: 0,
       );
+      if (oldRace != null && updated.sectId != null) {
+        final sect = Sect.byId(updated.sectId!);
+        if (sect.factionId == oldRace) {
+          reputation[oldRace] = (reputation[oldRace] ?? 0) - 60;
+          updated = updated.copyWith(
+            sectId: null,
+            contribution: 0,
+            disciples: const [],
+            missionLog: const [],
+            sectBetrayed: [...updated.sectBetrayed, sect.id],
+            sectRankAchieved: 0,
+            sectTasks: const [],
+            reputation: reputation,
+          );
+          parts.add(
+            'the ${sect.name} strike your name from the rolls '
+            'of their own people',
+          );
+        }
+      }
       parts.add(
         'your flesh is reforged — you are now '
         '${choice.raceChangeTo == 'human'

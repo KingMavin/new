@@ -314,5 +314,44 @@ void main() {
       final outcome = EventEngine.resolve(state, 'wild_garden', 0, location)!;
       expect(outcome.state.spiritHerbs, 4);
     });
+
+    test('reforging while sworn expels you from your old sect', () {
+      final state = stateAt(spiritStones: 9000).copyWith(
+        raceId: 'human',
+        sectId: 'sword_sect',
+        contribution: 340,
+        sectRankAchieved: 2,
+        sectTasks: const [],
+      );
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        1,
+        location,
+      )!;
+      expect(outcome.state.raceId, 'demon');
+      expect(outcome.state.sectId, isNull);
+      expect(outcome.state.contribution, 0);
+      expect(outcome.state.sectRankAchieved, 0);
+      expect(outcome.state.sectBetrayed, contains('sword_sect'));
+      expect(outcome.message, contains('strike your name'));
+    });
+
+    test('reforging keeps a sect of the new faction relationship intact', () {
+      final state = stateAt(spiritStones: 9000).copyWith(
+        raceId: 'demon',
+        sectId: 'blood_furnace_clan',
+        contribution: 120,
+      );
+      final outcome = EventEngine.resolve(
+        state,
+        'faceless_messenger',
+        1,
+        location,
+      )!;
+      expect(outcome.state.raceId, 'demon');
+      expect(outcome.state.sectId, 'blood_furnace_clan');
+      expect(outcome.state.contribution, 120);
+    });
   });
 }

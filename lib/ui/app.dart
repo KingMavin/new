@@ -185,7 +185,11 @@ class _MainShellState extends State<MainShell> {
 
   void _maybeShowEvent(BuildContext context) {
     final eventId = widget.controller.state.pendingEventId;
-    if (eventId == null || _shownEventId == eventId) return;
+    if (eventId == null) {
+      _shownEventId = null;
+      return;
+    }
+    if (_shownEventId == eventId) return;
     _shownEventId = eventId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;

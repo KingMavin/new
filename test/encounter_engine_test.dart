@@ -196,4 +196,21 @@ void main() {
     expect(a.victory, b.victory);
     expect(a.log, b.log);
   });
+
+  test('hopeless fights end in defeat, not flee \u2014 the loss that '
+      'battlesLost records', () {
+    final state = stateAt();
+    const juggernaut = Beast(
+      name: 'Juggernaut',
+      hp: 999999,
+      attack: 999,
+      defense: 3,
+      bonusType: 'attack',
+    );
+    final result = playedOut(state, juggernaut);
+    expect(result.finished, isTrue);
+    expect(result.victory, isFalse);
+    expect(result.fled, isFalse);
+    expect(result.playerHp, 0);
+  });
 }

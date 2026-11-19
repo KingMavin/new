@@ -477,8 +477,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       return current;
     }
     var next = EncounterEngine.advance(current, _state, rng: _rng);
-    if (next.finished && next.victory) {
-      _completeVictory(next, current.round + 1);
+    if (next.finished) {
+      if (next.victory) {
+        _completeVictory(next, current.round + 1);
+      } else {
+        _finishWithoutVictory(next);
+      }
       return _encounter;
     }
     _encounter = next;
@@ -495,16 +499,15 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       choiceIndex,
       rng: _rng,
     );
-    if (next.finished && next.victory) {
-      _completeVictory(next, next.round);
+    if (next.finished) {
+      if (next.victory) {
+        _completeVictory(next, next.round);
+      } else {
+        _finishWithoutVictory(next);
+      }
       return _encounter;
     }
     _encounter = next;
-    if (next.finished) {
-      _lastEncounterSummary = next.fled
-          ? 'You escaped with your life, but gained nothing.'
-          : 'You were driven from the field with nothing to show for it.';
-    }
     notifyListeners();
     return next;
   }
@@ -535,6 +538,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       contribution: _state.contribution + contribution,
       reputation: ReputationEngine.gain(_state, reputation, combat: true),
       tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
+      battlesLost: _state.battlesLost + (won ? 0 : 1),
       lastTournamentAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
@@ -578,6 +582,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       contribution: _state.contribution + contribution,
       reputation: ReputationEngine.gain(_state, reputation, combat: true),
       warsWon: _state.warsWon + (won ? 1 : 0),
+      battlesLost: _state.battlesLost + (won ? 0 : 1),
       lastWarAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
@@ -702,6 +707,35 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   void clearEncounter() {
     _encounter = null;
     notifyListeners();
+  }
+
+  void _finishWithoutVictory(EncounterState finished) {
+    if (_encounterKind == EncounterKind.tournament) {
+      _completeTournament(finished);
+      return;
+    }
+    if (_encounterKind == EncounterKind.war) {
+      _completeWar(finished);
+      return;
+    }
+    if (finished.fled) {
+      _encounter = finished;
+      _lastEncounterSummary = 'You escaped with your life, but gained nothing.';
+      notifyListeners();
+      save();
+      return;
+    }
+    _state = _state.copyWith(battlesLost: _state.battlesLost + 1);
+    _settle(
+      journal: [
+        'Was defeated by ${finished.beast.name} \u2014 the loss is recorded.',
+      ],
+    );
+    _lastEncounterSummary =
+        '${finished.beast.name} proved stronger this day.';
+    _encounter = finished;
+    notifyListeners();
+    save();
   }
 
   EventOutcome? resolvePendingEvent(int choiceIndex) {

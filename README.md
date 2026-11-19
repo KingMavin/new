@@ -245,6 +245,41 @@ voices — hand-written xianxia-flavored lines — surfaced by a small
   case key exists, every context has its lines, nothing is empty or duplicated,
   and unknown keys fall back to silence instead of crashing
 
+## Phase 20 — Full-game audit: every path traced, every breakage healed
+
+A whole-game integrity pass over the controller, engines, models, UI and
+saves — verdict: three real breakages found and healed, everything else
+verified clean.
+
+- **Tournament & war defeats now pay out** — the loss branches of
+  competing were unreachable: a finished encounter without victory was never
+  routed back into the tournament/war completers, so a lost bout gave no
+  contribution, no reputation, no cooldown timestamp (you could walk straight
+  back onto the platform) and no task progress. All encounter endings are now
+  routed by kind: victories and defeats both flow through their completers,
+  hunts' flights settle cleanly, and only true hunt defeat settles bare
+- **Losses are recorded** — `battlesLost` had been a dead counter since
+  narrated combat replaced auto-battle, which silently made the Wheel Unbound
+  hidden ending too easy. Tournament, war and hunt defeats now all count
+- **Reforging no longer leaves you sworn** — the faceless messenger's
+  flesh-reforging used to keep you enrolled in a sect of the very people you
+  just betrayed; that sect now strikes your name from the rolls (old faction
+  −60, contribution, rank, tasks and disciples reset), matching the
+  leave-oath consequences
+- **Recurring events show on their return** — the event dialog's
+  already-shown guard never reset between triggers, so the same event firing
+  again in one session was silently swallowed; the guard now clears once the
+  event resolves
+- **Verified clean everywhere else** — all 77 GameState fields roundtrip
+  through constructor, copyWith, toJson and fromJson (save schema v13); every
+  controller action notifies, saves and settles through the shared settle
+  helper; all 26 achievements, 6 endings (3 main + 3 hidden), 15 story
+  chapters, hidden-realm discovery, the nine sect perks, the music director's
+  four-context tracks and the audio gates were traced end to end; the errant
+  path's reputation bonus is applied at every combat reputation site; old
+  saves in any schema from v1 still load
+- Version 0.19.1; syntax scanner clean across all 101 Dart files
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:
