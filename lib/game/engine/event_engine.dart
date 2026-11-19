@@ -346,7 +346,7 @@ class EventEngine {
     final success = !choice.gamble || (roll ?? random.nextDouble()) < gambleSuccessChance;
 
     var stones = state.spiritStones - stoneCost;
-    var herbs = state.spiritHerbs - choice.herbCost + (choice.herbCost > 0 ? choice.herbs : 0);
+    var herbs = state.spiritHerbs - choice.herbCost;
     var cores = state.beastCores - coresSpent;
     var qiPills = state.qiPills;
     var qi = state.qi;

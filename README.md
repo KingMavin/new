@@ -146,7 +146,28 @@ Everything else (cooldowns, boost expiry, persistence, the store UI) already wor
 - Technique mastery: each battle victory with an equipped technique deepens its mastery (+1% attack per victory, capped at +15% at level 15); shown on the equipped technique's card, resets with each new life
 - Breakthrough ceremony: successful stage breakthroughs now get a full-screen still backdrop and heralding text instead of a snackbar; failures stay as snackbars
 - Boost chips: active Temple blessings show as live-countdown chips atop the home screen
-- Audio gateway: `AudioGateway` abstraction with a silent stub and a Sound settings toggle; swap in a real player later by implementing the gateway — no gameplay code changes needed
+- Audio gateway: `AudioGateway` abstraction with a sound toggle; the real player (Phase 15) sits behind it — no gameplay code changes needed
+
+## Phase 15 — Sound of the path & full accounting
+
+- Real looping audio through `audioplayers`, behind the same `AudioGateway` abstraction as everything else: the game never crashes over audio — any playback failure silently disables the player and play continues
+- Four seamless ambient loops, one per context (procedurally generated WAVs, `tool/generate_audio.py`): **Cultivation** (24s, temple bells over a low drone — home, dao, sect, alchemy and store screens), **Exploration** (16s, koto plucks with wind — the world map and hunt encounters), **Tournament** (12s, taiko drums and gongs for sect tournaments), **War** (12s, war drums and horns for sect wars); the music director picks the track from active encounter + current tab every frame, so music follows you into combat and back
+- Seven sound effects mark the milestones: breakthrough arpeggio, tribulation thunder, battle drum, forge clang, event chime, acquisition sparkle, ledger stamp
+- All 11 WAVs are seamless loops with deterministic seeds and are regenerable by running `python3 tool/generate_audio.py`; swap any file 1:1 to change the sound without touching code
+- The Sound switch in settings now truly mutes: toggling off stops the music immediately; toggling on starts the cultivation theme
+- Event system audited end-to-end: tournament and war completions now also roll for random events (previously only hunts could trigger them), a latent herb double-grant in event resolution was fixed (herbs are granted only through the success block), and failed gambles are verified to keep their costs paid but grant nothing
+- Everything is properly recorded and stored: every event, gambled roll, tournament and war result is journaled in the chronicle and persisted — the save holds it all in GameState v12 (journal, deeds, mastery, ledger day, intro flag, sound preference) with export/import in settings and backward compatibility back to version 1 saves
+
+### What hasn't been added yet
+
+Honest gaps, in rough priority order:
+
+- **Real ads and real billing** — the Temple of Support still runs on the stub gateway; wiring AdMob and Google Play billing needs ad-unit IDs and a store listing, which only you can provide from your consoles. The game is fully playable (and fully generous) without them
+- **Commissioned audio and art** — all music, effects, images and backdrops are procedurally generated placeholders: quiet, license-free, and swappable 1:1 by filename, but not the equal of a composed soundtrack or painted art pack
+- **Local notifications** — no reminder when a tournament window opens or the daily ledger is waiting for a signature
+- **Cloud save & sync, leaderboards** — the save lives on-device with manual text export/import; no account, no cloud slot, no ranking against other immortals
+- **Localization** — the whole game is English-only strings
+- **Deliberately out of scope** (Phase 9 ceiling): more races, more realms, or additional hard currencies — the depth goes into existing systems instead
 
 ## Getting started
 
@@ -174,6 +195,7 @@ lib/
     engine/       Pure simulation logic: qi rates, breakthroughs, offline calc
     persistence/  SaveRepository interface + shared_preferences implementation
     util/         Number and duration formatting
+  audio/          AudioGateway abstraction, music director, audioplayers player
   monetization/   MonetizationGateway abstraction + AdMob/billing stub
   state/          GameController (ChangeNotifier): tick loop, autosave, lifecycle
   ui/             Material 3 interface
@@ -186,6 +208,6 @@ progress consistent and unit-testable.
 ## Roadmap
 
 1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
-2. Local notifications, real audio through the audio gateway, optional background art packs
+2. Local notifications and optional background art / commissioned audio packs (the audio system itself is live since Phase 15)
 3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the shop honest
 4. Expand the stores: seasonal heirloom sets, sect-liveried gear skins, offline cap bundles as gifts

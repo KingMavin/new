@@ -1,3 +1,5 @@
+enum MusicTrack { none, cultivation, exploration, tournament, war }
+
 enum SoundEffect {
   breakthrough,
   tribulationCleared,
@@ -11,6 +13,8 @@ enum SoundEffect {
 abstract class AudioGateway {
   bool get isConfigured;
   void play(SoundEffect effect);
+  void setMusic(MusicTrack track);
+  void dispose();
 }
 
 class SilentAudioGateway implements AudioGateway {
@@ -21,4 +25,10 @@ class SilentAudioGateway implements AudioGateway {
 
   @override
   void play(SoundEffect effect) {}
+
+  @override
+  void setMusic(MusicTrack track) {}
+
+  @override
+  void dispose() {}
 }

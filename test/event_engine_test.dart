@@ -238,4 +238,67 @@ void main() {
       expect(outcome.state.storyChapter, 2);
     });
   });
+
+  group('herb netting (regression)', () {
+    test('no catalog choice both costs and grants herbs', () {
+      for (final event in EventEngine.catalog) {
+        for (final choice in event.choices) {
+          expect(
+            choice.herbCost > 0 && choice.herbs > 0,
+            isFalse,
+            reason: '${event.id}/${choice.label} mixes herb cost and grant',
+          );
+        }
+      }
+    });
+
+    test('gamble costs are paid even when the roll fails', () {
+      final state = stateAt(beastCores: 2, spiritStones: 1000);
+      final outcome = EventEngine.resolve(
+        state,
+        'thunder_cave',
+        1,
+        location,
+        roll: 0.99,
+      )!;
+      expect(outcome.state.spiritStones, 1000);
+    });
+
+    test('dragon bones scale grant only on a winning gamble', () {
+      final state = stateAt(beastCores: 0);
+      final lost = EventEngine.resolve(
+        state,
+        'dragon_bones',
+        1,
+        location,
+        roll: 0.99,
+      )!;
+      expect(lost.state.beastCores, 0);
+      final won = EventEngine.resolve(
+        state,
+        'dragon_bones',
+        1,
+        location,
+        roll: 0.01,
+      )!;
+      expect(won.state.beastCores, 2);
+    });
+
+    test('old monk provisions cost exactly one herb', () {
+      final rich = stateAt(spiritHerbs: 5);
+      final outcome = EventEngine.resolve(rich, 'old_monk', 1, location)!;
+      expect(outcome.state.spiritHerbs, 4);
+
+      final poor = stateAt(spiritHerbs: 0);
+      final blocked = EventEngine.resolve(poor, 'old_monk', 1, location);
+      expect(blocked!.state.spiritHerbs, 0);
+      expect(blocked.message, contains('lack'));
+    });
+
+    test('wild garden harvest grants exactly three herbs', () {
+      final state = stateAt(spiritHerbs: 1);
+      final outcome = EventEngine.resolve(state, 'wild_garden', 0, location)!;
+      expect(outcome.state.spiritHerbs, 4);
+    });
+  });
 }

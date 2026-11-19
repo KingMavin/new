@@ -529,6 +529,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       ],
       sound: won ? SoundEffect.battleWon : null,
     );
+    final eventId = EventEngine.maybeTrigger(_state, rng: _rng);
+    if (eventId != null) {
+      _state = _state.copyWith(pendingEventId: eventId);
+    }
     _lastEncounterSummary = won
         ? '${TournamentEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -568,6 +572,10 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       ],
       sound: won ? SoundEffect.battleWon : null,
     );
+    final warEventId = EventEngine.maybeTrigger(_state, rng: _rng);
+    if (warEventId != null) {
+      _state = _state.copyWith(pendingEventId: warEventId);
+    }
     _lastEncounterSummary = won
         ? '${WarEngine.victoryText(_state)}\n\n'
             '+${formatNumber(stones)} spirit stones, +$contribution '
@@ -1073,8 +1081,17 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     save();
   }
 
+  void setMusicTrack(MusicTrack track) {
+    if (_state.audioOn) {
+      _audio.setMusic(track);
+    } else {
+      _audio.setMusic(MusicTrack.none);
+    }
+  }
+
   void toggleAudio() {
     _state = _state.copyWith(audioOn: !_state.audioOn);
+    _audio.setMusic(_state.audioOn ? MusicTrack.cultivation : MusicTrack.none);
     notifyListeners();
     save();
   }

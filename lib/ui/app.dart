@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:immortal_path/audio/music_director.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/world_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
@@ -54,9 +55,20 @@ class _MainShellState extends State<MainShell> {
   int _index = 0;
   String? _shownEventId;
 
+  void _updateMusic() {
+    widget.controller.setMusicTrack(
+      MusicDirector.trackFor(
+        encounterActive: widget.controller.encounter != null,
+        kind: widget.controller.encounterKind,
+        tabIndex: _index,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _maybeShowEvent(context);
+    _updateMusic();
     return Scaffold(
       body: IndexedStack(
         index: _index,

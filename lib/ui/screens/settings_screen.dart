@@ -72,10 +72,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             builder: (context, _) => Card(
               child: SwitchListTile(
                 secondary: const Icon(Icons.music_note),
-                title: const Text('Sound effects'),
+                title: const Text('Sound'),
                 subtitle: const Text(
-                  'Currently a silent scaffold \u2014 the hook exists, '
-                  'audio files arrive in a future update.',
+                  'Ambient music follows your journey \u2014 quiet '
+                  'cultivation, windswept exploration, tournament drums, '
+                  'war horns. Effects mark breakthroughs, battles and '
+                  'blessings.',
                 ),
                 value: widget.controller.state.audioOn,
                 onChanged: (_) => widget.controller.toggleAudio(),
