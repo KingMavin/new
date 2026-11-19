@@ -330,6 +330,13 @@ class _SectJoinCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                   ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              sect.perkLabel,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+            ),
             const SizedBox(height: 8),
             if (blocker != null)
               Text(
@@ -825,6 +832,13 @@ class _SectStatusCard extends StatelessWidget {
             Text(
               '${SectEngine.rankNames[rank]} \u00b7 ${sect.bonusLabel}',
               style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              sect.perkLabel,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(

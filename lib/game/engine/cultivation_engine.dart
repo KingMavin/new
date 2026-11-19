@@ -53,7 +53,9 @@ class CultivationEngine {
         pow(CultivationEngine.realmQiGrowth, state.realmIndex).toDouble();
     final stageMultiplier = 1.0 + 0.5 * state.stageIndex;
     final technique = Technique.byId(state.techniqueId);
-    final companionMultiplier = 1.0 + (state.companion?.qiBonus ?? 0);
+    final companionMultiplier = 1.0 +
+        (state.companion?.qiBonus ?? 0) *
+            SectEngine.companionScale(state);
     return realmMultiplier *
         stageMultiplier *
         technique.qiMultiplier *

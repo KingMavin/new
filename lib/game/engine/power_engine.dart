@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/power.dart';
 import 'package:immortal_path/game/models/world_location.dart';
@@ -28,7 +29,10 @@ class PowerEngine {
   ) {
     final elite = location.isRaid || location.isFactionHall;
     final chance = elite ? 0.06 : 0.01;
-    if (random.nextDouble() >= chance) return null;
+    if (random.nextDouble() >=
+        (chance * SectEngine.discoveryScale(state)).clamp(0.0, 1.0)) {
+      return null;
+    }
     final candidates = PowerCatalog.foundPowers()
         .where((power) => !state.discoveredPowers.contains(power.id))
         .toList();

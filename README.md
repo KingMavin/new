@@ -198,6 +198,29 @@ where strength is always the answer.
   highest sect rank achieved; version 12 saves load cleanly with defaults, and
   reincarnation strokes all three back to a fresh mortal slate
 
+## Phase 18 — Nine sects, nine different doctrines
+
+Phase 17 gave every sect the same three bonus axes; Phase 18 makes each hall
+genuinely its own. Every sect keeps its rank-scaled axis bonus and adds **one
+unique perk** of comparable value — different in kind, none ranked above
+another:
+
+- **Heavenly Sword Sect** — Blade Doctrine: tournament duels award +50% contribution
+- **Mystic Formation Hall** — Array Warding: tribulations begin one wave weaker (never below two)
+- **Imperial Herbal Court** — Physician's Grace: brewing pills has a 30% chance of an extra pill
+- **Blood Furnace Clan** — Furnace Oath: forging success chance +10%
+- **Myriad Pill Valley** — Elixir Refinement: qi and breakthrough pills are 25% more potent
+- **Nightveil Bureau** — Omen Files: power discovery chance ×1.5
+- **Spirit Beast Court** — Pack Bond: companion bonuses are doubled
+- **Verdant Whisper Grove** — Root Patience: hunt loot stones +20%
+- **Wind-Speaker Circle** — Storm Grammar: tournament and war cooldowns −25%
+
+Perks live in `SectEngine` as pure helpers, are wired into the tournament,
+tribulation, forge, power-discovery, combat, cultivation and cooldown paths,
+are shown on every join card and the sect status card, and are covered by
+`test/sect_perks_test.dart`. A sect's perk and axis align with its doctrine, so
+choosing a hall is choosing a playstyle, not a math ranking.
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:

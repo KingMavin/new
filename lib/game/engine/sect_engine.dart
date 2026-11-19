@@ -34,6 +34,35 @@ class SectEngine {
   static bool canJoinSpecific(GameState state, String sectId) =>
       joinBlocker(state, sectId) == null;
 
+  static bool hasPerk(String? sectId, String perkSectId) => sectId == perkSectId;
+
+  static double tournamentPrizeBonus(GameState state) =>
+      hasPerk(state.sectId, 'sword_sect') ? 0.5 : 0.0;
+
+  static int tribulationWaveRelief(GameState state) =>
+      hasPerk(state.sectId, 'formation_hall') ? 1 : 0;
+
+  static double brewDoubleChance(GameState state) =>
+      hasPerk(state.sectId, 'imperial_herbal_court') ? 0.30 : 0.0;
+
+  static double forgeLuckBonus(GameState state) =>
+      hasPerk(state.sectId, 'blood_furnace_clan') ? 0.10 : 0.0;
+
+  static double pillValueBonus(GameState state) =>
+      hasPerk(state.sectId, 'pill_valley') ? 0.25 : 0.0;
+
+  static double discoveryScale(GameState state) =>
+      hasPerk(state.sectId, 'nightveil_bureau') ? 1.5 : 1.0;
+
+  static double companionScale(GameState state) =>
+      hasPerk(state.sectId, 'beast_court') ? 2.0 : 1.0;
+
+  static double lootStonesBonus(GameState state) =>
+      hasPerk(state.sectId, 'verdant_grove') ? 0.20 : 0.0;
+
+  static double cooldownScale(GameState state) =>
+      hasPerk(state.sectId, 'wind_speaker_circle') ? 0.75 : 1.0;
+
   static GameState join(GameState state, String sectId) {
     if (!canJoin(state)) return state;
     return state.copyWith(sectId: sectId, contribution: 0);

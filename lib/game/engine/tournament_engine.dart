@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:immortal_path/game/engine/combat_engine.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/world_location.dart';
 
@@ -36,7 +37,10 @@ class TournamentEngine {
 
   static double prizeStones(GameState state) => 50.0 * pow(2.0, state.realmIndex);
 
-  static int prizeContribution(GameState state) => 30 + 10 * state.realmIndex;
+  static int prizeContribution(GameState state) =>
+      ((30 + 10 * state.realmIndex) *
+              (1.0 + SectEngine.tournamentPrizeBonus(state)))
+          .round();
 
   static String victoryText(GameState state) =>
       'The referee raises his hand. The crowd roars as you are named '

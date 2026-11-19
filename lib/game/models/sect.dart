@@ -5,6 +5,7 @@ class Sect {
   final String description;
   final String hallLine;
   final String bonusLabel;
+  final String perkLabel;
 
   const Sect({
     required this.id,
@@ -13,6 +14,7 @@ class Sect {
     required this.description,
     required this.hallLine,
     required this.bonusLabel,
+    required this.perkLabel,
   });
 
   static const List<Sect> catalog = [
@@ -24,6 +26,7 @@ class Sect {
       hallLine: 'A thousand sword-terraces ring the peak; every stone has '
           'absorbed one duelist\u2019s regret.',
       bonusLabel: 'Attack +12% per sect rank',
+      perkLabel: 'Blade Doctrine \u2014 tournament duels award +50% contribution',
     ),
     Sect(
       id: 'formation_hall',
@@ -33,6 +36,7 @@ class Sect {
       hallLine: 'Chalk-white courtyards over a buried grand array that '
           'hums underfoot before every tribulation.',
       bonusLabel: 'Breakthrough chance +3% per sect rank',
+      perkLabel: 'Array Warding \u2014 tribulations begin one wave weaker',
     ),
     Sect(
       id: 'imperial_herbal_court',
@@ -43,6 +47,7 @@ class Sect {
       hallLine: 'Terraced medicine gardens climb the palace hill; the '
           'seventh terrace is guarded and grows things with opinions.',
       bonusLabel: 'Qi gain +10% per sect rank',
+      perkLabel: 'Physician\u2019s Grace \u2014 brewing can yield an extra pill',
     ),
     Sect(
       id: 'blood_furnace_clan',
@@ -53,6 +58,7 @@ class Sect {
       hallLine: 'Iron halls built into a dormant volcano; the forge never '
           'fully cools and neither do its disciples.',
       bonusLabel: 'Attack +12% per sect rank',
+      perkLabel: 'Furnace Oath \u2014 forging success chance +10%',
     ),
     Sect(
       id: 'pill_valley',
@@ -62,6 +68,7 @@ class Sect {
       hallLine: 'A valley smoked with a thousand cauldrons, each one held '
           'by a lineage and a temper.',
       bonusLabel: 'Qi gain +10% per sect rank',
+      perkLabel: 'Elixir Refinement \u2014 qi and breakthrough pills are 25% more potent',
     ),
     Sect(
       id: 'nightveil_bureau',
@@ -72,6 +79,7 @@ class Sect {
       hallLine: 'Windowless black archives where ward charts outnumber '
           'swords and silence is a filing system.',
       bonusLabel: 'Breakthrough chance +3% per sect rank',
+      perkLabel: 'Omen Files \u2014 power discovery chance \u00d71.5',
     ),
     Sect(
       id: 'beast_court',
@@ -81,6 +89,7 @@ class Sect {
       hallLine: 'Open-air courts of moss and bone where spirit beasts '
           'deliberate beside their bonded drinkers.',
       bonusLabel: 'Attack +12% per sect rank',
+      perkLabel: 'Pack Bond \u2014 companion bonuses are doubled',
     ),
     Sect(
       id: 'verdant_grove',
@@ -91,6 +100,7 @@ class Sect {
       hallLine: 'A grove of seedling-souls, each tree a sworn disciple; '
           'the oldest rings remember the first tribes.',
       bonusLabel: 'Qi gain +10% per sect rank',
+      perkLabel: 'Root Patience \u2014 hunt loot stones +20%',
     ),
     Sect(
       id: 'wind_speaker_circle',
@@ -101,6 +111,7 @@ class Sect {
       hallLine: 'Cliffside rings of standing stones that sing when the '
           'weather \u2014 or fate \u2014 turns.',
       bonusLabel: 'Breakthrough chance +3% per sect rank',
+      perkLabel: 'Storm Grammar \u2014 tournament and war cooldowns \u221225%',
     ),
   ];
 

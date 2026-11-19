@@ -66,7 +66,9 @@ class ExploreOutcome {
 class CombatEngine {
   static double playerAttack(GameState state) {
     final technique = Technique.byId(state.techniqueId);
-    final companionMultiplier = 1.0 + (state.companion?.attackBonus ?? 0);
+    final companionMultiplier = 1.0 +
+        (state.companion?.attackBonus ?? 0) *
+            SectEngine.companionScale(state);
     return 10.0 *
             pow(2.0, state.realmIndex) *
             (1.0 + 0.15 * state.stageIndex) *
@@ -130,6 +132,7 @@ class CombatEngine {
         (1.0 + ReputationEngine.standingBonus(state)) *
         (1.0 + StoryEngine.stoneBonus(state)) *
         (1.0 + PowerEngine.stoneBonus(state)) *
+        (1.0 + SectEngine.lootStonesBonus(state)) *
         BoostEngine.multiplierFor(state, 'stones');
     var herbs = 0;
     var cores = 0;

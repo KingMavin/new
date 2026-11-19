@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:immortal_path/game/engine/combat_engine.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/technique.dart';
@@ -40,7 +41,11 @@ class TribulationEngine {
     return state.copyWith(
       qi: 0,
       tribulationActive: true,
-      tribulationWavesTotal: wavesForRealm(state.realmIndex),
+      tribulationWavesTotal: max(
+        2,
+        wavesForRealm(state.realmIndex) -
+            SectEngine.tribulationWaveRelief(state),
+      ),
       tribulationWavesCleared: 0,
       tribulationHp: maxHp,
       tribulationMaxHp: maxHp,

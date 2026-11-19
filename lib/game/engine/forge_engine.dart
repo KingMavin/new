@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:immortal_path/game/engine/store_engine.dart';
 import 'package:immortal_path/game/models/equipment.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 
 import 'package:immortal_path/game/models/forge.dart';
@@ -43,7 +44,10 @@ class ForgeEngine {
       return ForgeOutcome(success: false, message: blockerMessage, state: state);
     }
     final r = roll ?? rng?.nextDouble() ?? Random().nextDouble();
-    final success = r < recipe.successChance;
+    final chance =
+        (recipe.successChance + SectEngine.forgeLuckBonus(state))
+            .clamp(0.0, 1.0);
+    final success = r < chance;
     final cost = recipe.stoneCostFor(state.realmIndex).toDouble();
     final refund = success ? 0.0 : (cost * 0.4).roundToDouble();
     var updated = state.copyWith(

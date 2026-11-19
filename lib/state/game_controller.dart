@@ -336,15 +336,17 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   bool canStartTournament() {
     if (_state.raceId == null || _state.sectId == null) return false;
     final last = _state.lastTournamentAt;
-    return last == null ||
-        DateTime.now().difference(last) >= TournamentEngine.cooldown;
+    final cooldown =
+        TournamentEngine.cooldown * SectEngine.cooldownScale(_state);
+    return last == null || DateTime.now().difference(last) >= cooldown;
   }
 
   Duration tournamentCooldownRemaining() {
     final last = _state.lastTournamentAt;
     if (last == null) return Duration.zero;
-    final remaining =
-        TournamentEngine.cooldown - DateTime.now().difference(last);
+    final cooldown =
+        TournamentEngine.cooldown * SectEngine.cooldownScale(_state);
+    final remaining = cooldown - DateTime.now().difference(last);
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
@@ -405,14 +407,15 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (_state.raceId == null || _state.sectId == null) return false;
     if (_state.realmIndex < WarEngine.requiredRealm) return false;
     final last = _state.lastWarAt;
-    return last == null ||
-        DateTime.now().difference(last) >= WarEngine.cooldown;
+    final cooldown = WarEngine.cooldown * SectEngine.cooldownScale(_state);
+    return last == null || DateTime.now().difference(last) >= cooldown;
   }
 
   Duration warCooldownRemaining() {
     final last = _state.lastWarAt;
     if (last == null) return Duration.zero;
-    final remaining = WarEngine.cooldown - DateTime.now().difference(last);
+    final cooldown = WarEngine.cooldown * SectEngine.cooldownScale(_state);
+    final remaining = cooldown - DateTime.now().difference(last);
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
@@ -738,9 +741,13 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   bool craft(String recipeId) {
     final recipe = AlchemyEngine.recipeById(recipeId);
     if (recipe == null) return false;
-    final updated = AlchemyEngine.craft(_state, recipe);
+    var updated = AlchemyEngine.craft(_state, recipe);
     if (updated == null) return false;
     _state = updated;
+    if (recipe.id == 'qi_pill' &&
+        _rng.nextDouble() < SectEngine.brewDoubleChance(_state)) {
+      _state = _state.copyWith(qiPills: _state.qiPills + 1);
+    }
     _state = SectTaskEngine.recordProgress(_state, 'brew_pills');
     _settle(journal: ['Refined ${recipe.name}.']);
     notifyListeners();
@@ -750,7 +757,9 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
 
   bool useQiPill() {
     if (_state.qiPills <= 0) return false;
-    final gain = CultivationEngine.qiPerSecond(_state) * 120;
+    final gain = CultivationEngine.qiPerSecond(_state) *
+        120 *
+        (1.0 + SectEngine.pillValueBonus(_state));
     _state = _state.copyWith(
       qiPills: _state.qiPills - 1,
       qi: _state.qi + gain,
@@ -767,7 +776,8 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       breakthroughPills: _state.breakthroughPills - 1,
       breakthroughBonus: min(
         maxBreakthroughBonus,
-        _state.breakthroughBonus + 0.2,
+        _state.breakthroughBonus +
+            0.2 * (1.0 + SectEngine.pillValueBonus(_state)),
       ),
     );
     notifyListeners();
