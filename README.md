@@ -330,6 +330,28 @@ A follow-up whole-game review after the marks system landed:
   untouched for players unmarked
 - Version 0.20.1; scanner clean across 104 Dart files
 
+## Phase 23 — Loose ends tied: lifespan matters, dead code gone
+
+A third targeted pass over every engine and controller hook:
+
+- **Lifespan now cultivates for you** — lifespan was earned (alchemy
+  pills, event outcomes) and displayed, but never did anything. Long lives
+  now deepen the dao: +1% qi rate per full century of hard-won lifespan,
+  capitalized up to +10% — 'The mountain rewards those who linger.' The
+  alchemy recipe explains the rule; tests pin the boundary
+- **Audio lifecycle sealed** — the audio gateway (music + effects
+  players) is now disposed with the controller instead of leaking players
+- **Dead code excised** — three never-reachable members removed after a
+  zero-reference audit: `CombatEngine.describeLoot` (superseded by the hunt
+  summary builder), `StoreEngine.equipmentSlotField` (equip-if-better
+  switches directly), and `controller.adCooldownRemaining` (the store
+  computes cooldowns from BoostEngine itself); the now-orphaned format
+  import left the combat engine with them
+- **Verified clean** — every remaining engine constant and helper has at
+  least one live call site (checked mechanically across lib, tool and
+  tests); scanner clean across 104 Dart files
+- Version 0.20.2
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:

@@ -87,6 +87,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
+    _audio.dispose();
     super.dispose();
   }
 
@@ -963,12 +964,6 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   bool get monetizationConfigured => _gateway.isConfigured;
-
-  Duration adCooldownRemaining(String placementId) {
-    final placement = MonetizationCatalog.placementById(placementId);
-    if (placement == null) return Duration.zero;
-    return BoostEngine.remainingCooldown(_state, placement);
-  }
 
   Future<bool> watchAdFor(String placementId) async {
     final placement = MonetizationCatalog.placementById(placementId);

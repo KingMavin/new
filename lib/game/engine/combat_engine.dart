@@ -14,7 +14,6 @@ import 'package:immortal_path/game/models/equipment.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/technique.dart';
 import 'package:immortal_path/game/models/world_location.dart';
-import 'package:immortal_path/game/util/format.dart';
 
 class LootReward {
   final double spiritStones;
@@ -261,17 +260,4 @@ class CombatEngine {
     );
   }
 
-  static String describeLoot(LootReward loot) {
-    final parts = <String>[
-      '${formatNumber(loot.spiritStones)} spirit stones',
-      if (loot.spiritHerbs > 0) '${loot.spiritHerbs} spirit herb(s)',
-      if (loot.beastCores > 0) '${loot.beastCores} beast core(s)',
-      if (loot.equipment != null)
-        '${loot.equipment!.name} (${loot.equipment!.gradeName})',
-      if (loot.technique != null) 'Technique scroll: ${loot.technique!.name}',
-      if (loot.tamedCompanion != null)
-        'Tamed companion: ${loot.tamedCompanion!.name}',
-    ];
-    return parts.join(', ');
-  }
 }

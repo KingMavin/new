@@ -110,7 +110,7 @@ class _AlchemyScreenState extends State<AlchemyScreen> {
                 _PillCard(
                   name: 'Longevity Pill',
                   count: state.lifespanPills,
-                  description: 'Permanently gain 25 years of lifespan.',
+                  description: 'Permanently gain 25 years of lifespan.\nLong lives deepen the dao: +1% qi rate per full century gained (max +10%).',
                   onUse: () => _usePill('lifespan_pill'),
                 ),
               ],

@@ -67,8 +67,21 @@ class CultivationEngine {
         (1.0 + PowerEngine.qiBonus(state)) *
         (1.0 + ReputationEngine.standingBonus(state)) *
         BoostEngine.multiplierFor(state, 'qi') *
-        ConsequenceEngine.qiFactor(state);
+        ConsequenceEngine.qiFactor(state) *
+        longevityFactor(state);
   }
+
+  static const double longevityPerCentury = 0.01;
+  static const double longevityCap = 0.10;
+
+  /// A longer life spends years of patience on the dao: +1% qi rate per
+  /// full century of hard-won lifespan, up to +10%.
+  static double longevityFactor(GameState state) =>
+      1.0 +
+      min(
+        longevityCap,
+        (state.lifespanBonusYears ~/ 100) * longevityPerCentury,
+      );
 
   static double qiToNextStage(GameState state) =>
       100.0 * pow(1.6, state.globalStageIndex).toDouble();

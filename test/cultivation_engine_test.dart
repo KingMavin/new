@@ -20,6 +20,26 @@ GameState stateAt({
 }
 
 void main() {
+  group('longevity', () {
+    test('unmodified lives cultivate at base rate', () {
+      final state = stateAt();
+      expect(CultivationEngine.longevityFactor(state), 1.0);
+    });
+
+    test('centuries of lifespan grant 1% qi per century', () {
+      final state = stateAt().copyWith(lifespanBonusYears: 250);
+      expect(CultivationEngine.longevityFactor(state), closeTo(1.02, 0.0001));
+      expect(
+        CultivationEngine.qiPerSecond(state),
+        CultivationEngine.qiPerSecond(stateAt()) * 1.02,
+      );
+    });
+
+    test('the longevity blessing caps at +10%', () {
+      final state = stateAt().copyWith(lifespanBonusYears: 5000);
+      expect(CultivationEngine.longevityFactor(state), closeTo(1.10, 0.0001));
+    });
+  });
   group('qiPerSecond', () {
     test('scales with realm', () {
       final early = stateAt();

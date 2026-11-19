@@ -20,17 +20,6 @@ class StoreEngine {
         return state.copyWith(amulet: item);
     }
   }
-
-  static String equipmentSlotField(EquipmentSlot slot) {
-    switch (slot) {
-      case EquipmentSlot.weapon:
-        return 'weapon';
-      case EquipmentSlot.armor:
-        return 'armor';
-      case EquipmentSlot.amulet:
-        return 'amulet';
-    }
-  }
 }
 
 class SectStoreEngine {
