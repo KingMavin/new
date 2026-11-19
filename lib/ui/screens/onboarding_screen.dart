@@ -52,7 +52,9 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
       'Hunt spirit beasts for stones, herbs and cores. Hidden realms '
           'whisper from beyond the map; fallen cities keep their own '
           'council. Chance encounters will find you mid-journey \u2014 what '
-          'you choose from three options writes your chronicle.',
+          'you choose from three options writes your chronicle, and some '
+          'choices bind lasting marks to your flesh: boons and banes that '
+          'shape this whole life. Even the heavens keep score of scars.',
     ),
     _Slide(
       'sect',

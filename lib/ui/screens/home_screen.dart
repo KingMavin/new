@@ -5,6 +5,7 @@ import 'package:immortal_path/game/engine/ending_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/models/game_state.dart';
+import 'package:immortal_path/game/models/consequence.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/narration.dart';
 import 'package:immortal_path/game/models/race.dart';
@@ -904,6 +905,25 @@ class _StatsCard extends StatelessWidget {
               'Tribulations failed',
               '${state.tribulationsFailed}',
             ),
+            _statRow(
+              context,
+              'Battles won',
+              '${state.battlesWon}',
+            ),
+            _statRow(
+              context,
+              'Battles lost',
+              '${state.battlesLost}',
+            ),
+            if (state.consequences.isNotEmpty)
+              _statRow(
+                context,
+                'Marks of the path',
+                [
+                  for (final id in state.consequences)
+                    ConsequenceCatalog.byId(id)?.title ?? id,
+                ].join(', '),
+              ),
           ],
         ),
       ),

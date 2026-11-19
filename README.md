@@ -59,7 +59,7 @@ backdrops (gradient art per location) rather than animations.
 - Your name is asked at character creation — the name the world will remember
 - Story arcs: five choice-driven chapters per race (The Verdant Empire, The Old Blood, The Beast-Blooded), unlocked as you climb the realm ladder (chapters at realms 0, 1, 3, 5, 7)
 - Every story choice pushes you along one of three paths — Path of Heaven (+3% breakthrough), Path of Sovereignty (+5% attack), Path of the Wild (+5% spirit stones) — and the dominant path shapes how your tale ends
-- Six endings, evaluated when you survive the final tribulation at the ascension gate: three main endings (The Gate of Heaven, The Ash Throne, The Verdant Return) decided by your dominant path, and three hidden endings earned by condition — The Ninth Lightning (survive after failing three tribulations), The Nameless Grave (give everything to the beggar at the shrine), The Wheel Unbound (reach ascension after three rebirths without losing a battle)
+- Seven endings, evaluated when you survive the final tribulation at the ascension gate: three main endings (The Gate of Heaven, The Ash Throne, The Verdant Return) decided by your dominant path, and four hidden endings earned by condition — The Ninth Lightning (survive after failing three tribulations), The Nameless Grave (give everything to the beggar at the shrine), The Wheel Unbound (reach ascension after three rebirths without losing a battle), The Unbowed (ascend carrying three or more lasting marks of the path)
 - Endings are epilogue milestones, not game-overs: they are recorded in your legend, the game continues, and reincarnation starts a New Game+ with a fresh story arc
 - Immortalization: reach the highest reputation tier or achieve any ending and the world remembers you — statues, heralds crying your name at tournaments, enemy soldiers whispering it on war fronts; your name survives every reincarnation
 - Race-gated combat moments: demons get Bloodline Frenzy, demi-humans get Beast Senses, humans get Formation Tactics as mid-fight choices
@@ -142,7 +142,7 @@ Everything else (cooldowns, boost expiry, persistence, the store UI) already wor
 - Onboarding journey: five illustrated slides (mortal world, qi loop, wilds, sects & forge, Temple of Support) shown on first launch before origin selection; Skippable once, never shown again (`introSeen` in the save)
 - Chronicle journal: every meaningful beat — hunts, breakthroughs, tribulation outcomes, event results, forge attempts, sect oaths, purchases, acquisitions of power and hidden realms, offline cultivation while away — is written to a 60-entry per-life chronicle; newest eight shown in the Chronicle card on the Dao screen with a full-chronicle dialog
 - Daily Sect Ledger: sign once per day for one of eight deterministic omens, spirit stones scaled by realm (150 × 1.8^realm) and 2 qi pills; the ledger card appears on home whenever today's signature is missing
-- Codex of Deeds: 26 achievements checked automatically after hunts, breakthroughs, tribulations, events, tournaments, wars, forges and purchases; earned deeds announce themselves in the chronicle, are browsable from the Deeds card on the Dao screen, and are purely cosmetic badges
+- Codex of Deeds: 27 achievements checked automatically after hunts, breakthroughs, tribulations, events, tournaments, wars, forges and purchases; earned deeds announce themselves in the chronicle, are browsable from the Deeds card on the Dao screen, and are purely cosmetic badges
 - Technique mastery: each battle victory with an equipped technique deepens its mastery (+1% attack per victory, capped at +15% at level 15); shown on the equipped technique's card, resets with each new life
 - Breakthrough ceremony: successful stage breakthroughs now get a full-screen still backdrop and heralding text instead of a snackbar; failures stay as snackbars
 - Boost chips: active Temple blessings show as live-countdown chips atop the home screen
@@ -273,7 +273,7 @@ verified clean.
 - **Verified clean everywhere else** — all 77 GameState fields roundtrip
   through constructor, copyWith, toJson and fromJson (save schema v13); every
   controller action notifies, saves and settles through the shared settle
-  helper; all 26 achievements, 6 endings (3 main + 3 hidden), 15 story
+  helper; (Phase 21 later raised this to 27 achievements and 7 endings) — 15 story
   chapters, hidden-realm discovery, the nine sect perks, the music director's
   four-context tracks and the audio gates were traced end to end; the errant
   path's reputation bonus is applied at every combat reputation site; old
@@ -309,6 +309,26 @@ reincarnation washes the slate:
 - Save schema v14 (marks serialized, old saves load clean); 104 Dart files,
   scanner clean; new `consequence_engine_test.dart` plus mark coverage in
   the ending, event and game-state suites. Version 0.20.0
+
+## Phase 22 — Second full-game audit: what the sweeps caught
+
+A follow-up whole-game review after the marks system landed:
+
+- **Fixed** — stale counts: README and store listing still said six
+  endings / 26 achievements; now seven endings (with The Unbowed aliased in
+  the ending list) and 27 deeds everywhere
+- **Fixed** — unused consequence import in the save model
+- **Records card now keeps score honestly** — battles won and lost were
+  tracked but never displayed at a glance; both rows are on the home Records
+  card, and your current marks of the path are listed there too
+- **Onboarding teaches the stakes** — slide three now warns that choices
+  bind lasting marks, boons and banes, until the wheel washes them
+- **Verified safe** — beast loot only ever drops weapons and armor (the
+  equip-on-drop path predates the amulet slot and is not affected), tamed
+  beasts only appear when you walk companionless, docs counts now match the
+  engines, and the marks system's factors leave every pre-existing balance
+  untouched for players unmarked
+- Version 0.20.1; scanner clean across 104 Dart files
 
 ### What hasn't been added yet
 

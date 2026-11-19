@@ -35,9 +35,9 @@ clash.
 herbs and cores. Forge weapons, armor, and talismans with spirit stones —
 every hammer swing is a gamble against shatter odds.
 
-☯️ **Nine realms, six endings** — Advance through stage breakthroughs and
+☯️ **Nine realms, seven endings** — Advance through stage breakthroughs and
 heavenly tribulations. Five story chapters per race lead to three main
-endings and three hidden ones — and an ending is a milestone, not a
+endings and four hidden ones — including The Unbowed, for those who ascend carrying their scars — and an ending is a milestone, not a
 game-over.
 
 🐉 **Powers, bloodlines, rebirth** — Discover soul-deep powers hidden in the
@@ -50,7 +50,7 @@ for an omen and a tithe.
 
 🌄 **A world to remember you** — 17 explorable locations, hidden realms and
 fallen cities, faction reputations from Stranger to Beloved of the Heavens,
-and 26 achievements chronicling your deeds.
+and 27 achievements chronicling your deeds.
 
 🔇 **Plays offline. No account. No tracking.** Optional support items
 simulated in this build — never needed to finish the path.
