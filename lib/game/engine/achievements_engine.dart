@@ -19,19 +19,19 @@ class AchievementsEngine {
     Achievement(
       id: 'first_blood',
       title: 'First Blood',
-      description: 'Win your first battle.',
+      description: 'Win your first hunt.',
       check: (s) => s.battlesWon >= 1,
     ),
     Achievement(
       id: 'hunter',
       title: 'Hunter of the Wilds',
-      description: 'Win 50 battles.',
+      description: 'Win 50 hunts.',
       check: (s) => s.battlesWon >= 50,
     ),
     Achievement(
       id: 'slayer',
       title: 'Slayer of Hundreds',
-      description: 'Win 200 battles.',
+      description: 'Win 200 hunts.',
       check: (s) => s.battlesWon >= 200,
     ),
     Achievement(
@@ -63,6 +63,18 @@ class AchievementsEngine {
       title: 'Wheel of Nine',
       description: 'Survive 9 heavenly tribulations.',
       check: (s) => s.tribulationsSurvived >= 9,
+    ),
+    Achievement(
+      id: 'sands_champion',
+      title: 'Sands Champion',
+      description: 'Win 10 sect tournaments.',
+      check: (s) => s.tournamentsWon >= 10,
+    ),
+    Achievement(
+      id: 'warlord',
+      title: 'Warlord of the Front',
+      description: 'Win 5 sect wars.',
+      check: (s) => s.warsWon >= 5,
     ),
     Achievement(
       id: 'reincarnator',

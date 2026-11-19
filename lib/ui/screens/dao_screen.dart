@@ -102,7 +102,7 @@ class DaoScreen extends StatelessWidget {
                         ? 'Mastery Lv ${controller.techniqueMasteryLevel()}'
                             '/15 \u00b7 attack '
                             '+${controller.techniqueMasteryLevel()}% '
-                            'per victory'
+                            '(grows with every victory)'
                         : null,
                     onEquip: () => controller.equipTechnique(technique.id),
                   ),
