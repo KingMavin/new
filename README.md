@@ -169,6 +169,16 @@ Honest gaps, in rough priority order:
 - **Localization** — the whole game is English-only strings
 - **Deliberately out of scope** (Phase 9 ceiling): more races, more realms, or additional hard currencies — the depth goes into existing systems instead
 
+## Phase 16 — Ship-ready packaging
+
+- **Original app icon** painted by `tool/generate_icon.py` (pure stdlib, same visual language as the backdrops): a 1024x1024 full-bleed icon, a 512 store icon, and an adaptive-icon foreground with the motif inset in the safe zone — a moon, layered ridges and a tiered pagoda against a dawn horizon. The `flutter_launcher_icons` dependency and config are already in `pubspec.yaml`; after `flutter create`, `dart run flutter_launcher_icons` stamps every platform density
+- **PRIVACY_POLICY.md** — the store-mandated policy, and an easy one: no account, no analytics, no ad SDKs in this build, and the save never leaves the device
+- **STORE_LISTING.md** — paste-ready Google Play / App Store listing: short and full descriptions, a screenshot checklist, content-rating notes, and the data-safety answers (no data collected)
+- **RELEASE_CHECKLIST.md** — the complete ordered path from `flutter pub get` to a store upload: platform-shell generation, icon stamping, keystores, the WAV-to-OGG size trim, AdMob/billing go-live, and internal testing
+- **LICENSE** — MIT; all art and audio is original, procedurally generated, license-free content
+- Portrait orientation lock and a version line in the settings About section
+
+
 ## Getting started
 
 This repository contains the Dart/Flutter sources. Generate the platform
@@ -211,3 +221,4 @@ progress consistent and unit-testable.
 2. Local notifications and optional background art / commissioned audio packs (the audio system itself is live since Phase 15)
 3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the shop honest
 4. Expand the stores: seasonal heirloom sets, sect-liveried gear skins, offline cap bundles as gifts
+5. Platform shells, icon stamping, store consoles: see RELEASE_CHECKLIST.md — it is the ordered path to a public build

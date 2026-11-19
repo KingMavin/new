@@ -143,6 +143,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          const Center(
+            child: Text(
+              'Version 0.16.0 \u2014 the mortal becomes immortal',
+              style: TextStyle(fontSize: 12),
+            ),
+          ),
         ],
       ),
     );

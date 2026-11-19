@@ -1,7 +1,7 @@
 name: immortal_path
 description: A single-player idle cultivation RPG inspired by xianxia mythology.
 publish_to: "none"
-version: 0.15.0
+version: 0.16.0
 
 environment:
   sdk: ^3.5.0
@@ -16,6 +16,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#0C0E14"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true
