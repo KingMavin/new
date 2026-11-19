@@ -14,6 +14,26 @@ class SectEngine {
   static bool canJoin(GameState state) =>
       state.sectId == null && state.realmIndex >= joinRealmRequirement;
 
+  static String? joinBlocker(GameState state, String sectId) {
+    if (state.sectId != null) {
+      return 'You are already sworn to ${Sect.byId(state.sectId!).name}.';
+    }
+    final sect = Sect.byId(sectId);
+    if (state.raceId != null && sect.factionId != state.raceId) {
+      return 'They take only their own people.';
+    }
+    if (state.realmIndex < joinRealmRequirement) {
+      return 'Requires realm ${joinRealmRequirement + 1} or beyond.';
+    }
+    if (state.sectBetrayed.contains(sectId)) {
+      return 'Their gates will not open for you again this life.';
+    }
+    return null;
+  }
+
+  static bool canJoinSpecific(GameState state, String sectId) =>
+      joinBlocker(state, sectId) == null;
+
   static GameState join(GameState state, String sectId) {
     if (!canJoin(state)) return state;
     return state.copyWith(sectId: sectId, contribution: 0);
@@ -39,21 +59,39 @@ class SectEngine {
     return -1;
   }
 
+  static const Set<String> attackAxes = {
+    'sword_sect',
+    'blood_furnace_clan',
+    'beast_court',
+  };
+
+  static const Set<String> qiAxes = {
+    'pill_valley',
+    'imperial_herbal_court',
+    'verdant_grove',
+  };
+
+  static const Set<String> breakthroughAxes = {
+    'formation_hall',
+    'nightveil_bureau',
+    'wind_speaker_circle',
+  };
+
   static double attackMultiplier(GameState state) {
     final sect = sectOf(state);
-    if (sect == null || sect.id != 'sword_sect') return 1.0;
+    if (sect == null || !attackAxes.contains(sect.id)) return 1.0;
     return 1.0 + 0.12 * (1 + rankOf(state.contribution));
   }
 
   static double qiMultiplier(GameState state) {
     final sect = sectOf(state);
-    if (sect == null || sect.id != 'pill_valley') return 1.0;
+    if (sect == null || !qiAxes.contains(sect.id)) return 1.0;
     return 1.0 + 0.10 * (1 + rankOf(state.contribution));
   }
 
   static double breakthroughBonus(GameState state) {
     final sect = sectOf(state);
-    if (sect == null || sect.id != 'formation_hall') return 0.0;
+    if (sect == null || !breakthroughAxes.contains(sect.id)) return 0.0;
     return 0.03 * (1 + rankOf(state.contribution));
   }
 }

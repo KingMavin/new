@@ -158,6 +158,46 @@ Everything else (cooldowns, boost expiry, persistence, the store UI) already wor
 - Event system audited end-to-end: tournament and war completions now also roll for random events (previously only hunts could trigger them), a latent herb double-grant in event resolution was fixed (herbs are granted only through the success block), and failed gambles are verified to keep their costs paid but grant nothing
 - Everything is properly recorded and stored: every event, gambled roll, tournament and war result is journaled in the chronicle and persisted — the save holds it all in GameState v12 (journal, deeds, mastery, ledger day, intro flag, sound preference) with export/import in settings and backward compatibility back to version 1 saves
 
+## Phase 17 — Living sects: halls with faces, tasks, promotions & the errant road
+
+The Sect tab is no longer a bare gate list. Nine sects — three per faction —
+each staffed with named NPCs, a three-slot task board, and rank promotions read
+out by the hall master. Leaving has teeth, and the unsworn life is a real path
+where strength is always the answer.
+
+- **Nine sects across three factions** — the Verdant Empire keeps the Heavenly
+  Sword Sect, the Mystic Formation Hall and the Imperial Herbal Court; the Ash
+  Wastes Clans raise the Blood Furnace Clan, Myriad Pill Valley and the
+  Nightveil Bureau; the Border Forest Tribes walk with the Spirit Beast Court,
+  the Verdant Whisper Grove and the Wind-Speaker Circle. Every sect shares the
+  same three bonus axes (attack +12%/rank, qi +10%/rank, breakthrough +3%/rank)
+  so no hall is a trap, only a flavor
+- **NPC halls** — each sect seats a Master, a Steward and a Quartermaster with
+  hand-written, in-voice dialogue lines (70+ lines total) that rotate with your
+  rank and chronicle; a hall panel on the Sect tab gives the bare building faces
+- **Task boards** — three slots, five task types (Cull the Beasts, Serve the
+  Banner, Wear the Sect Colors, Feed the Furnace, Walk the Wilds). Progress
+  flows in automatically from hunts/raids, tournament fights, wars, alchemy
+  brewing and travel; targets scale with realm and stone rewards scale at
+  ×1.8/realm. Claiming records contribution, faction reputation and stones,
+  then the steward posts a fresh task in the vacated slot
+- **Rank promotions** — crossing a contribution threshold (Outer Disciple →
+  Inner Disciple → Core Disciple → Elder) raises a full-screen ceremony with
+  the sect backdrop and the hall master's congratulations; it is journaled and
+  chimed
+- **Consequences for leaving** — breaking an oath costs all contribution and
+  rank, −60 faction reputation, and a lifetime ban from that sect (the
+  oathbreaker list lives in the save); sect arts you learned there lapse until
+  you rejoin their hall. The leave dialog states every price before you sign
+- **The errant path** — refusing all sects and factions is a designed road: a
+  standing card tracks reputation with your faction, faction gatekeepers speak
+  to the unsworn, hall tasks pay reputation ×2.5 (no contribution), and
+  combat deeds earn +25% reputation — strength, counted. Sect-banner tasks
+  (wars, tournaments in sect colors) never appear on an unsworn board
+- **GameState v13** — adds the task board, the oathbreaker list and the
+  highest sect rank achieved; version 12 saves load cleanly with defaults, and
+  reincarnation strokes all three back to a fresh mortal slate
+
 ### What hasn't been added yet
 
 Honest gaps, in rough priority order:
@@ -217,7 +257,7 @@ progress consistent and unit-testable.
 
 ## Roadmap
 
-1. More content inside existing systems: extra story chapters, events, regions, and hidden locations
+1. More content inside existing systems: extra story chapters, events, regions, and hidden locations (Phase 17 already deepened the sects: nine halls, NPC rosters, task boards, promotions and the errant path)
 2. Local notifications and optional background art / commissioned audio packs (the audio system itself is live since Phase 15)
 3. Real store integration: swap `StubMonetizationGateway` for AdMob rewarded ads and `in_app_purchase` behind the existing gateway interface while keeping the shop honest
 4. Expand the stores: seasonal heirloom sets, sect-liveried gear skins, offline cap bundles as gifts

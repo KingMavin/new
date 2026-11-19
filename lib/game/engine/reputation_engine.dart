@@ -68,9 +68,14 @@ class ReputationEngine {
 
   static const int warLossGain = 10;
 
-  static Map<String, int> gain(GameState state, int amount) {
+  static const double errantCombatBonus = 0.25;
+
+  static Map<String, int> gain(GameState state, int amount, {bool combat = false}) {
     final raceId = state.raceId;
     if (raceId == null || amount <= 0) return state.reputation;
+    if (combat && state.sectId == null) {
+      amount = (amount * (1 + errantCombatBonus)).round();
+    }
     return {
       ...state.reputation,
       raceId: reputationOf(state, raceId) + amount,

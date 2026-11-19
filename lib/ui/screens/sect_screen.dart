@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/game/engine/disciple_engine.dart';
+import 'package:immortal_path/game/engine/reputation_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
 import 'package:immortal_path/game/engine/tournament_engine.dart';
 import 'package:immortal_path/game/engine/war_engine.dart';
@@ -8,6 +9,8 @@ import 'package:immortal_path/game/models/disciple.dart';
 import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
 import 'package:immortal_path/game/models/sect.dart';
+import 'package:immortal_path/game/models/sect_npc.dart';
+import 'package:immortal_path/game/models/sect_task.dart';
 import 'package:immortal_path/game/util/format.dart';
 import 'package:immortal_path/state/game_controller.dart';
 import 'package:immortal_path/ui/screens/sect_store_screen.dart';
@@ -25,9 +28,28 @@ class SectScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Leave the sect?'),
-        content: const Text(
-          'You will lose your rank and contribution. Your disciples '
-          'will go their own way.',
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Breaking your oath costs:'),
+            SizedBox(height: 8),
+            Text(
+              '\u2022 All accumulated contribution, your rank and your '
+              'standing in the hall.',
+            ),
+            Text('\u2022 60 reputation with your faction.'),
+            Text('\u2022 Sect arts you learned are lost \u2014 their '
+                'power leaves with the oath.'),
+            Text('\u2022 Their gates will not open for you again this '
+                'life.'),
+            SizedBox(height: 8),
+            Text(
+              'The errant road begins in silence \u2014 strength is your '
+              'only banner now.',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -39,7 +61,7 @@ class SectScreen extends StatelessWidget {
               Navigator.of(dialogContext).pop();
               controller.leaveSect();
             },
-            child: const Text('Leave'),
+            child: const Text('Break the oath'),
           ),
         ],
       ),
@@ -113,7 +135,7 @@ class SectScreen extends StatelessWidget {
 
           appBar: AppBar(
             title: const Text('Sect'),
-                    actions: [
+            actions: [
               IconButton(
                 icon: const Icon(Icons.settings),
                 tooltip: 'Settings',
@@ -129,10 +151,16 @@ class SectScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                if (sect == null)
-                  ..._buildJoinSection(context, state)
-                else ...[
+                if (sect == null) ...[
+                  _TaskBoardCard(controller: controller),
+                  const SizedBox(height: 16),
+                  ..._buildJoinSection(context, state),
+                ] else ...[
+                  _SectHallCard(state: state),
+                  const SizedBox(height: 16),
                   _SectStatusCard(state: state, sect: sect),
+                  const SizedBox(height: 16),
+                  _TaskBoardCard(controller: controller),
                   const SizedBox(height: 16),
                   _EventsSection(controller: controller, state: state),
                   const SizedBox(height: 16),
@@ -178,38 +206,464 @@ class SectScreen extends StatelessWidget {
   }
 
   List<Widget> _buildJoinSection(BuildContext context, GameState state) {
-    final canJoin = SectEngine.canJoin(state);
-    return [
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            state.realmIndex >= SectEngine.joinRealmRequirement
-                ? 'Sects of the cultivation world open their gates to you. '
-                    'Swear allegiance to one to gain its teachings.'
-                : 'Sects only accept cultivators of Foundation Establishment '
-                    'realm or higher.',
-            style: Theme.of(context).textTheme.bodyMedium,
+    final widgets = <Widget>[];
+    if (state.raceId == null) {
+      widgets.add(
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Choose your origin first \u2014 each faction keeps its own '
+              'halls, and its own gates.',
+            ),
           ),
+        ),
+      );
+      return widgets;
+    }
+    final factionName =
+        ReputationEngine.factionNames[state.raceId] ?? 'your faction';
+    widgets.add(
+      Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          'Halls of the $factionName',
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
-      const SizedBox(height: 8),
-      for (final sect in Sect.catalog)
+    );
+    widgets.add(const SizedBox(height: 8));
+    for (final sect in Sect.forFaction(state.raceId!)) {
+      final blocker = SectEngine.joinBlocker(state, sect.id);
+      widgets.add(_SectJoinCard(
+        state: state,
+        sect: sect,
+        blocker: blocker,
+        onJoin: () => controller.joinSect(sect.id),
+      ));
+      widgets.add(const SizedBox(height: 8));
+    }
+    final otherFactions = ReputationEngine.factionNames.keys
+        .where((id) => id != state.raceId)
+        .toList();
+    if (otherFactions.isNotEmpty) {
+      widgets.add(
         Card(
-          child: ListTile(
-            leading: const Icon(Icons.groups),
-            title: Text(sect.name),
-            subtitle: Text(
-              '${sect.description}\n${sect.bonusLabel}',
-              isThreeLine: true,
-            ),
-            trailing: FilledButton.tonal(
-              onPressed: canJoin ? () => controller.joinSect(sect.id) : null,
-              child: const Text('Join'),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Foreign Halls', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                for (final id in otherFactions)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      '${ReputationEngine.factionNames[id]} \u2014 they take '
+                      'only their own people.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
-    ];
+      );
+    }
+    if (state.realmIndex < SectEngine.joinRealmRequirement) {
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Sects only accept cultivators of Foundation Establishment '
+              'realm or higher.',
+            ),
+          ),
+        ),
+      );
+    }
+    return widgets;
+  }
+}
+
+class _SectJoinCard extends StatelessWidget {
+  final GameState state;
+  final Sect sect;
+  final String? blocker;
+  final VoidCallback onJoin;
+
+  const _SectJoinCard({
+    required this.state,
+    required this.sect,
+    required this.blocker,
+    required this.onJoin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(sect.name, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              sect.description,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              sect.hallLine,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              sect.bonusLabel,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            if (blocker != null)
+              Text(
+                blocker,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+              )
+            else
+              FilledButton.tonal(
+                onPressed: onJoin,
+                child: const Text('Swear allegiance'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrantPathCard extends StatelessWidget {
+  final GameState state;
+
+  const _ErrantPathCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final rep = ReputationEngine.ownReputation(state);
+    final next = ReputationEngine.nextThreshold(rep);
+    final gatekeeper =
+        SectHallCatalog.gatekeepers[state.raceId] ??
+            SectHallCatalog.gatekeepers.values.first;
+    final quote = gatekeeper.lineFor(seed: DateTime.now().day + rep);
+    final factionName =
+        ReputationEngine.factionNames[state.raceId] ?? 'the world';
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.explore),
+                const SizedBox(width: 8),
+                Text('The Errant Path', style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'You walk unsworn. Sects sharpen their own \u2014 the roads '
+              'answer to strength.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              next < 0
+                  ? 'Standing with $factionName: '
+                      '${ReputationEngine.standingLabel(rep)} ($rep)'
+                  : 'Standing with $factionName: '
+                      '${ReputationEngine.standingLabel(rep)} ($rep) \u2014 '
+                      '${next - rep} more for the next tier',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            LinearProgressIndicator(
+              value: next < 0 ? 1.0 : (rep / next).clamp(0.0, 1.0),
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Combat deeds earn +25% reputation \u2014 strength is the '
+              'answer.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            Text(
+              'Hall tasks pay reputation \u00d72.5, but no sect contribution '
+              'or ranks.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '"$quote"',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+            ),
+            Text(
+              '\u2014 ${gatekeeper.name}, ${gatekeeper.title}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskBoardCard extends StatelessWidget {
+  final GameController controller;
+
+  const _TaskBoardCard({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = controller.state;
+    final sworn = state.sectId != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Task Board', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sworn
+                      ? 'The sect posts its tasks \u2014 fulfil them for '
+                          'contribution, reputation and stones.'
+                      : 'The faction halls post tasks for the unsworn \u2014 '
+                          'paid in reputation, counted by strength.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < state.sectTasks.length; i++)
+                  _TaskCard(
+                    state: state,
+                    task: state.sectTasks[i],
+                    controller: controller,
+                    index: i,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TaskCard extends StatelessWidget {
+  final GameState state;
+  final ActiveTask task;
+  final GameController controller;
+  final int index;
+
+  const _TaskCard({
+    required this.state,
+    required this.task,
+    required this.controller,
+    required this.index,
+  });
+
+  static const Map<String, IconData> taskIcons = {
+    'beast_hunt': Icons.travel_explore,
+    'war_serve': Icons.shield,
+    'tournament_fight': Icons.emoji_events,
+    'brew_pills': Icons.science,
+    'wander_far': Icons.map,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final type = task.type();
+    final sworn = state.sectId != null;
+    final repGain =
+        sworn ? task.reputation : (task.reputation * 2.5).round();
+    final reward = sworn
+        ? '+${task.contribution} contribution \u00b7 +$repGain reputation '
+            '\u00b7 +${formatNumber(task.stones)} spirit stones'
+        : '+$repGain reputation \u00b7 +${formatNumber(task.stones)} '
+            'spirit stones';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(taskIcons[type.id] ?? Icons.assignment),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(type.title, style: Theme.of(context).textTheme.titleSmall),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(type.description, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Progress: ${task.progress} / ${task.target}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              FilledButton.tonal(
+                onPressed: task.complete
+                    ? () {
+                        final message = controller.claimSectTask(index);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              message ?? 'The task is not yet fulfilled.',
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
+                child: Text(task.complete ? 'Claim reward' : 'In progress'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: (task.progress / task.target).clamp(0.0, 1.0),
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          const SizedBox(height: 4),
+          Text(reward, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectHallCard extends StatelessWidget {
+  final GameState state;
+
+  const _SectHallCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final sectId = state.sectId;
+    if (sectId == null) return const SizedBox.shrink();
+    final sect = Sect.byId(sectId);
+    final hall = SectHallCatalog.byId(sectId);
+    if (hall.sectId != sectId) return const SizedBox.shrink();
+    final seedBase = DateTime.now().day +
+        SectEngine.rankOf(state.contribution) +
+        state.journal.length;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.account_balance),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'The Hall of ${sect.name}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              sect.hallLine,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            _NpcRow(
+              npc: hall.master,
+              icon: Icons.workspace_premium,
+              seed: seedBase,
+            ),
+            _NpcRow(
+              npc: hall.steward,
+              icon: Icons.assignment,
+              seed: seedBase + 1,
+            ),
+            _NpcRow(
+              npc: hall.quartermaster,
+              icon: Icons.storefront,
+              seed: seedBase + 2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NpcRow extends StatelessWidget {
+  final SectNpc npc;
+  final IconData icon;
+  final int seed;
+
+  const _NpcRow({required this.npc, required this.icon, required this.seed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            child: Icon(icon, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${npc.name} \u2014 ${npc.title}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  '"${npc.lineFor(seed: seed)}"',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -349,6 +803,7 @@ class _EventsSection extends StatelessWidget {
     );
   }
 }
+
 class _SectStatusCard extends StatelessWidget {
   final GameState state;
   final Sect sect;

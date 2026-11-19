@@ -7,6 +7,7 @@ import 'package:immortal_path/game/models/game_state.dart';
 import 'package:immortal_path/game/models/journal.dart';
 import 'package:immortal_path/game/models/monetization.dart';
 import 'package:immortal_path/game/models/realm_ladder.dart';
+import 'package:immortal_path/game/models/sect_task.dart';
 
 void main() {
   group('RealmLadder', () {
@@ -507,8 +508,48 @@ void main() {
       expect(parsed.journal.first.time, entryTime);
     });
 
-    test('version marker is 12', () {
-      expect(GameState.initial().toJson()['version'], 12);
+    test('version marker is 13', () {
+      expect(GameState.initial().toJson()['version'], 13);
+    });
+  });
+
+  group('phase 17 living sects state', () {
+    test('version 12 saves load with phase 17 defaults', () {
+      final v12 = GameState.initial().toJson()
+        ..['version'] = 12
+        ..remove('sectTasks')
+        ..remove('sectBetrayed')
+        ..remove('sectRankAchieved');
+      final parsed = GameState.fromJson(v12);
+      expect(parsed.sectTasks, isEmpty);
+      expect(parsed.sectBetrayed, isEmpty);
+      expect(parsed.sectRankAchieved, 0);
+    });
+
+    test('json roundtrip preserves sect tasks and betrayer marks', () {
+      final state = GameState.initial().copyWith(
+        sectId: 'sword_sect',
+        sectRankAchieved: 2,
+        sectBetrayed: const ['pill_valley'],
+        sectTasks: [
+          const ActiveTask(
+            typeId: 'beast_hunt',
+            target: 5,
+            progress: 3,
+            contribution: 25,
+            reputation: 10,
+            stones: 50,
+          ),
+        ],
+      );
+      final parsed = GameState.fromJson(state.toJson());
+      expect(parsed.sectId, 'sword_sect');
+      expect(parsed.sectRankAchieved, 2);
+      expect(parsed.sectBetrayed, ['pill_valley']);
+      expect(parsed.sectTasks, hasLength(1));
+      expect(parsed.sectTasks.first.typeId, 'beast_hunt');
+      expect(parsed.sectTasks.first.progress, 3);
+      expect(parsed.sectTasks.first.complete, isFalse);
     });
   });
 }

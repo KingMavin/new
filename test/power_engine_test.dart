@@ -122,4 +122,25 @@ void main() {
       }
     });
   });
+
+  group('sect arts lapse', () {
+    test('sect power bonuses vanish when you are no longer in that sect', () {
+      final sworn = GameState.initial().copyWith(
+        sectId: 'sword_sect',
+        discoveredPowers: const ['phoenix_ember', 'sword_intent'],
+      );
+      expect(PowerEngine.attackBonus(sworn), closeTo(0.18, 1e-9));
+
+      final left = sworn.copyWith(sectId: null);
+      expect(PowerEngine.attackBonus(left), closeTo(0.10, 1e-9));
+    });
+
+    test('sect power returns once you rejoin the holding sect', () {
+      final rejoined = GameState.initial().copyWith(
+        sectId: 'sword_sect',
+        discoveredPowers: const ['sword_intent'],
+      );
+      expect(PowerEngine.attackBonus(rejoined), closeTo(0.08, 1e-9));
+    });
+  });
 }

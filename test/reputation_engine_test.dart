@@ -133,4 +133,26 @@ void main() {
       expect(ReputationEngine.standingLabel(0), 'Stranger');
     });
   });
+
+  group('errant path', () {
+    test('combat reputation gains +25% for the unsworn', () {
+      final errant = GameState.initial().copyWith(
+        raceId: 'human',
+        reputation: const {'human': 0, 'demon': 0, 'demi_human': 0},
+      );
+      expect(ReputationEngine.gain(errant, 100, combat: true)['human'], 125);
+
+      final sworn = errant.copyWith(sectId: 'sword_sect');
+      expect(ReputationEngine.gain(sworn, 100, combat: true)['human'], 100);
+    });
+
+    test('non-combat gains ignore the errant bonus', () {
+      final errant = GameState.initial().copyWith(
+        raceId: 'human',
+        reputation: const {'human': 0, 'demon': 0, 'demi_human': 0},
+      );
+      expect(ReputationEngine.gain(errant, 100, combat: false)['human'], 100);
+      expect(ReputationEngine.gain(errant, 100)['human'], 100);
+    });
+  });
 }

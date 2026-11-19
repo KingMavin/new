@@ -25,6 +25,7 @@ import 'package:immortal_path/game/engine/war_engine.dart';
 import 'package:immortal_path/game/engine/event_engine.dart';
 import 'package:immortal_path/game/engine/forge_engine.dart';
 import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/engine/sect_task_engine.dart';
 import 'package:immortal_path/game/engine/soul_engine.dart';
 import 'package:immortal_path/game/engine/story_engine.dart';
 import 'package:immortal_path/game/engine/store_engine.dart';
@@ -65,6 +66,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   final SaveRepository _repository;
   final MonetizationGateway _gateway;
   final AudioGateway _audio;
+  int? _pendingPromotionRank;
   final Random _rng = Random();
   Timer? _timer;
   DateTime _lastTick = DateTime.now();
@@ -93,6 +95,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
       _state = saved;
       _applyOfflineGains();
     }
+    _state = SectTaskEngine.ensureBoard(_state, rng: _rng);
     _lastTick = DateTime.now();
     _startTimer();
     notifyListeners();
@@ -163,7 +166,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _settle({List<String>? journal, SoundEffect? sound}) {
-    var updated = _state;
+    var updated = SectTaskEngine.ensureBoard(_state, rng: _rng);
     if (journal != null) {
       for (final line in journal.reversed) {
         updated = JournalEngine.record(updated, line);
@@ -179,6 +182,19 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
           'Deed recognized: ${achievement?.title ?? id}',
         );
         sound ??= SoundEffect.acquisition;
+      }
+    }
+    if (updated.sectId != null) {
+      final rank = SectEngine.rankOf(updated.contribution);
+      if (rank > updated.sectRankAchieved) {
+        updated = updated.copyWith(sectRankAchieved: rank);
+        updated = JournalEngine.record(
+          updated,
+          'The ${Sect.byId(updated.sectId!).name} names you '
+          '${SectEngine.rankNames[rank]}.',
+        );
+        sound ??= SoundEffect.eventChime;
+        _pendingPromotionRank = rank;
       }
     }
     if (sound != null) _sound(sound);
@@ -272,6 +288,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     if (!CombatEngine.isLocationUnlocked(_state, location)) return false;
     final standardIndex =
         WorldCatalog.standardLocations().indexOf(location);
+    _state = SectTaskEngine.recordProgress(_state, 'wander_far');
     _state = _state.copyWith(
       activeLocationId: id,
       selectedZoneIndex:
@@ -513,11 +530,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = _state.copyWith(
       spiritStones: _state.spiritStones + stones,
       contribution: _state.contribution + contribution,
-      reputation: ReputationEngine.gain(_state, reputation),
+      reputation: ReputationEngine.gain(_state, reputation, combat: true),
       tournamentsWon: _state.tournamentsWon + (won ? 1 : 0),
       lastTournamentAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
+    _state = SectTaskEngine.recordProgress(_state, 'tournament_fight');
     _checkImmortalization();
     _settle(
       journal: [
@@ -555,11 +573,12 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = _state.copyWith(
       spiritStones: _state.spiritStones + stones,
       contribution: _state.contribution + contribution,
-      reputation: ReputationEngine.gain(_state, reputation),
+      reputation: ReputationEngine.gain(_state, reputation, combat: true),
       warsWon: _state.warsWon + (won ? 1 : 0),
       lastWarAt: DateTime.now(),
     );
     if (won) _state = MasteryEngine.recordVictory(_state);
+    _state = SectTaskEngine.recordProgress(_state, 'war_serve');
     _checkImmortalization();
     _settle(
       journal: [
@@ -638,7 +657,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     }
     final reputationGain = ReputationEngine.huntGain(updated);
     updated = updated.copyWith(
-      reputation: ReputationEngine.gain(updated, reputationGain),
+      reputation: ReputationEngine.gain(updated, reputationGain, combat: true),
     );
     if (_state.raceId != null) {
       lines.add(
@@ -670,6 +689,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = updated;
     _checkImmortalization();
     _state = MasteryEngine.recordVictory(_state);
+    _state = SectTaskEngine.recordProgress(_state, 'beast_hunt');
     _settle(journal: journalLines, sound: SoundEffect.battleWon);
     _encounter = finished;
     notifyListeners();
@@ -721,6 +741,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     final updated = AlchemyEngine.craft(_state, recipe);
     if (updated == null) return false;
     _state = updated;
+    _state = SectTaskEngine.recordProgress(_state, 'brew_pills');
     _settle(journal: ['Refined ${recipe.name}.']);
     notifyListeners();
     save();
@@ -1020,7 +1041,7 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   bool joinSect(String sectId) {
-    if (!SectEngine.canJoin(_state)) return false;
+    if (SectEngine.joinBlocker(_state, sectId) != null) return false;
     _state = SectEngine.join(_state, sectId);
     _settle(
       journal: ['Sworn to the ${Sect.byId(sectId).name}.'],
@@ -1033,11 +1054,32 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
 
   void leaveSect() {
     if (_state.sectId == null) return;
+    final sect = Sect.byId(_state.sectId!);
+    final raceId = _state.raceId;
+    var reputation = _state.reputation;
+    if (raceId != null) {
+      reputation = {
+        ...reputation,
+        raceId: (reputation[raceId] ?? 0) - 60,
+      };
+    }
     _state = _state.copyWith(
       sectId: null,
       contribution: 0,
       disciples: const [],
       missionLog: const [],
+      sectBetrayed: [..._state.sectBetrayed, sect.id],
+      sectRankAchieved: 0,
+      sectTasks: const [],
+      reputation: reputation,
+    );
+    _settle(
+      journal: [
+        'You cut your oath to the ${sect.name} (-60 reputation). '
+            'Their gates will not open for you again this life.',
+        'The errant road begins in silence \u2014 strength is your '
+            'only banner now.',
+      ],
     );
     notifyListeners();
     save();
@@ -1079,6 +1121,26 @@ class GameController extends ChangeNotifier with WidgetsBindingObserver {
     _state = _state.copyWith(introSeen: true);
     notifyListeners();
     save();
+  }
+
+  int? consumePendingPromotion() {
+    final rank = _pendingPromotionRank;
+    _pendingPromotionRank = null;
+    return rank;
+  }
+
+  String? claimSectTask(int index) {
+    final board = SectTaskEngine.ensureBoard(_state, rng: _rng);
+    final result = SectTaskEngine.claim(board, index, rng: _rng);
+    if (result == null) return null;
+    _state = result.state;
+    _settle(
+      journal: [result.message],
+      sound: SoundEffect.acquisition,
+    );
+    notifyListeners();
+    save();
+    return result.message;
   }
 
   void setMusicTrack(MusicTrack track) {

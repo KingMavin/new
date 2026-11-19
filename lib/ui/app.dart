@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:immortal_path/audio/music_director.dart';
+import 'package:immortal_path/game/engine/sect_engine.dart';
+import 'package:immortal_path/game/models/sect_npc.dart';
 import 'package:immortal_path/state/game_controller.dart';
+import 'package:immortal_path/ui/theme/backdrops.dart';
 import 'package:immortal_path/ui/screens/world_screen.dart';
 import 'package:immortal_path/ui/screens/alchemy_screen.dart';
 import 'package:immortal_path/ui/screens/dao_screen.dart';
@@ -68,6 +71,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     _maybeShowEvent(context);
+    _maybeShowPromotion(context);
     _updateMusic();
     return Scaffold(
       body: IndexedStack(
@@ -112,6 +116,66 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
     );
+  }
+
+  void _maybeShowPromotion(BuildContext context) {
+    final controller = widget.controller;
+    final rank = controller.consumePendingPromotion();
+    if (rank == null) return;
+    final sectId = controller.state.sectId;
+    if (sectId == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          final master = SectHallCatalog.byId(sectId).master;
+          return AlertDialog(
+            title: const Text('Promotion'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    height: 140,
+                    width: double.infinity,
+                    child: BackdropImage(
+                      BackdropCatalog.forScreen('sect'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  SectEngine.rankNames[rank],
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '"${master.lineFor(seed: rank)}"',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\u2014 ${master.name}, ${master.title}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Continue'),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   void _maybeShowEvent(BuildContext context) {

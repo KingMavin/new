@@ -2,6 +2,7 @@ import 'companion.dart';
 import 'disciple.dart';
 import 'equipment.dart';
 import 'journal.dart';
+import 'sect_task.dart';
 import 'monetization.dart';
 import 'realm_ladder.dart';
 
@@ -82,6 +83,9 @@ class GameState {
   final List<String> achievements;
   final Map<String, int> techniqueMastery;
   final bool audioOn;
+  final List<ActiveTask> sectTasks;
+  final List<String> sectBetrayed;
+  final int sectRankAchieved;
 
   const GameState({
     required this.realmIndex,
@@ -158,6 +162,9 @@ class GameState {
     this.achievements = const [],
     this.techniqueMastery = const {},
     this.audioOn = true,
+    this.sectTasks = const [],
+    this.sectBetrayed = const [],
+    this.sectRankAchieved = 0,
   });
 
   factory GameState.initial() => GameState(
@@ -286,6 +293,9 @@ class GameState {
     List<String>? achievements,
     Map<String, int>? techniqueMastery,
     bool? audioOn,
+    List<ActiveTask>? sectTasks,
+    List<String>? sectBetrayed,
+    int? sectRankAchieved,
   }) {
     return GameState(
       realmIndex: realmIndex ?? this.realmIndex,
@@ -380,11 +390,14 @@ class GameState {
       achievements: achievements ?? this.achievements,
       techniqueMastery: techniqueMastery ?? this.techniqueMastery,
       audioOn: audioOn ?? this.audioOn,
+      sectTasks: sectTasks ?? this.sectTasks,
+      sectBetrayed: sectBetrayed ?? this.sectBetrayed,
+      sectRankAchieved: sectRankAchieved ?? this.sectRankAchieved,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'version': 12,
+        'version': 13,
         'realmIndex': realmIndex,
         'stageIndex': stageIndex,
         'qi': qi,
@@ -459,6 +472,9 @@ class GameState {
         'achievements': achievements,
         'techniqueMastery': techniqueMastery,
         'audioOn': audioOn,
+        'sectTasks': sectTasks.map((task) => task.toJson()).toList(),
+        'sectBetrayed': sectBetrayed,
+        'sectRankAchieved': sectRankAchieved,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -602,5 +618,12 @@ class GameState {
                   (key, value) => MapEntry(key, (value as num).toInt()),
                 ),
         audioOn: json['audioOn'] as bool? ?? true,
+        sectTasks: (json['sectTasks'] as List<dynamic>? ?? const [])
+            .map((task) => ActiveTask.fromJson(task as Map<String, dynamic>))
+            .toList(),
+        sectBetrayed: (json['sectBetrayed'] as List<dynamic>? ?? const [])
+            .map((id) => id as String)
+            .toList(),
+        sectRankAchieved: json['sectRankAchieved'] as int? ?? 0,
       );
 }

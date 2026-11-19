@@ -12,9 +12,11 @@ class PowerEngine {
     var total = 0.0;
     for (final id in state.discoveredPowers) {
       final power = PowerCatalog.byId(id);
-      if (power != null && power.bonusType == bonusType) {
-        total += power.magnitude;
+      if (power == null || power.bonusType != bonusType) continue;
+      if (power.sectId != null && power.sectId != state.sectId) {
+        continue;
       }
+      total += power.magnitude;
     }
     return total;
   }
